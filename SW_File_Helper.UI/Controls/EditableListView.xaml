@@ -1,0 +1,49 @@
+﻿<UserControl x:Class="SW_File_Helper.Controls.EditableListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SW_File_Helper.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance local:EditableListView, IsDesignTimeCreatable=True}">
+    <UserControl.Resources>
+        <!--#region Styles -->
+        <Style x:Key="Button" TargetType="Button">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="0,5,0,5"/>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="Background" Value="LightGray"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="16"/>
+            </Style.Setters>
+        </Style>
+        <!--#endregion-->
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="125"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="{Binding Title}" Style="{StaticResource TextBlockStyle}"/>
+        <ListView Grid.Column="0" Grid.Row="1"/>
+        <Grid Grid.Column="1" Grid.Row="1">
+            <StackPanel Orientation="Vertical" Margin="7,10,7,0">
+                <Button Content="Add" Style="{StaticResource Button}" x:Name="AddButton" Click="AddButton_Click"/>
+                <Button Content="View Favorites" Style="{StaticResource Button}" x:Name="ViewFavoritesButton" Click="ViewFavoritesButton_Click"/>
+                <Button Content="Add to Favorites" Style="{StaticResource Button}" x:Name="AddToFavoritesButton" Click="AddToFavoritesButton_Click"/>
+                <Button Content="Remove" Style="{StaticResource Button}" x:Name="RemoveButton" Click="RemoveButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
