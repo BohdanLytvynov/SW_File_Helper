@@ -43,9 +43,7 @@ namespace SW_File_Helper
 
                 return mainwindow;
             });
-
             
-
             //Mapper configuration
             //var mapperConfig = new MapperConfiguration(mc =>
             //{

@@ -4,7 +4,7 @@ using System.Windows.Threading;
 
 namespace SW_File_Helper.ViewModels.Base.VM
 {
-    internal class ViewModelBase : INotifyPropertyChanged, IDataErrorInfo
+    public class ViewModelBase : INotifyPropertyChanged, IDataErrorInfo
     {
         private Dispatcher m_Dispatcher;
 

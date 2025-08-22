@@ -13,12 +13,15 @@
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition/>
+            <RowDefinition Height="200*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="386*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-
-        <Grid Grid.Row="1" Margin="0,0,0,7">
+        <Grid Grid.Row="0" x:Name="Settings">
+        </Grid>
+        <GridSplitter Grid.Row="1" Style="{StaticResource GridSplitter_Horizontal}"/>
+        <Grid Grid.Row="2" Margin="0,0,0,7">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -35,13 +38,7 @@
                     Margin="5" Grid.Column="2"
                 Title="Please Specify Destination"/>
         </Grid>
-
-        <Grid Grid.Row="3" Margin="0,7,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-        </Grid>
-
+        
         <Grid Grid.Row="3" 
               x:Name="ButtonsGrid">
             <Grid.ColumnDefinitions>

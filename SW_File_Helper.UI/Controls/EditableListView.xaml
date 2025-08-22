@@ -36,7 +36,11 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         <TextBlock Text="{Binding Title}" Style="{StaticResource TextBlockStyle}"/>
-        <ListView Grid.Column="0" Grid.Row="1"/>
+        <ListView Grid.Column="0" Grid.Row="1" 
+                  ItemsSource="{Binding Files, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                  SelectionMode="Multiple" x:Name="FileListView" 
+                  SelectionChanged="FileListView_SelectionChanged"
+                  />
         <Grid Grid.Column="1" Grid.Row="1">
             <StackPanel Orientation="Vertical" Margin="7,10,7,0">
                 <Button Content="Add" Style="{StaticResource Button}" x:Name="AddButton" Click="AddButton_Click"/>
