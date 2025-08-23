@@ -18,4 +18,8 @@
     <Folder Include="Mappings\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SW_FileHelper.BL\SW_File_Helper.BL\SW_File_Helper.BL.csproj" />
+  </ItemGroup>
+
 </Project>

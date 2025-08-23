@@ -13,33 +13,31 @@
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="200*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="386*"/>
+            <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" x:Name="Settings">
-        </Grid>
-        <GridSplitter Grid.Row="1" Style="{StaticResource GridSplitter_Horizontal}"/>
-        <Grid Grid.Row="2" Margin="0,0,0,7">
+        <Grid Grid.Row="0" Margin="0,0,0,7">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
 
             <controls:EditableListView
-                Title="Please Specify Source"
-                    Margin="5" Grid.Column="0"/>
+                Title="Please Specify Source and Destination"
+                Margin="5" Grid.Column="0"
+                ListViewItemAssemblyPath="{Binding CurrentAssembly, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ListViewItemTypeName="{Binding ListViewFileViewModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Items="{Binding Files, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                />
 
             <GridSplitter Grid.Column="1"
                           Style="{StaticResource GridSplitter_Vertical}"/>
-            <controls:EditableListView
-                    Margin="5" Grid.Column="2"
-                Title="Please Specify Destination"/>
+            <Grid Grid.Column="2" x:Name="Settings">
+            </Grid>
         </Grid>
-        
-        <Grid Grid.Row="3" 
+
+        <Grid Grid.Row="1" 
               x:Name="ButtonsGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>

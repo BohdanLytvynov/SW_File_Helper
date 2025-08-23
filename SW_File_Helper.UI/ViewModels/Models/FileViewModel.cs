@@ -1,22 +1,29 @@
-﻿using SW_File_Helper.ViewModels.Base.VM;
+﻿using Microsoft.Win32;
+using SW_File_Helper.BL.Helpers;
+using SW_File_Helper.ViewModels.Base.Commands;
+using SW_File_Helper.ViewModels.Base.VM;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace SW_File_Helper.ViewModels.Models
 {
-    public class FileViewModel : ViewModelBase
+    public class FileViewModel : CustomListViewItem
     {
-        #region Fields
-        private int m_ShowNumber;
+        #region Fields        
 
         private string m_FilePath;
 
         private bool m_IsValid;
 
         private bool m_IsEnabled;
+        #endregion
+
+        #region Commands
+        public ICommand OnBrowseFileButtonPressed { get; private set; }
         #endregion
 
         #region IDataErrorInfo
@@ -28,8 +35,9 @@ namespace SW_File_Helper.ViewModels.Models
 
                 switch (columnName)
                 {
-                    default:
-                        break;
+                    case nameof(FilePath):
+                        SetValidArrayValue(0, ValidationHelpers.IsPathValid(FilePath, out error));
+                        break;                    
                 }
 
                 return error;
@@ -37,10 +45,7 @@ namespace SW_File_Helper.ViewModels.Models
         }
         #endregion
 
-        #region Properties
-        public int ShowNumber 
-        { get => m_ShowNumber; set => Set(ref m_ShowNumber, value); }
-
+        #region Properties        
         public bool IsEnabled 
         { get => m_IsEnabled; set => Set(ref m_IsEnabled, value); }
 
@@ -51,28 +56,56 @@ namespace SW_File_Helper.ViewModels.Models
         #endregion
 
         #region Ctor
-        public FileViewModel(int showNumber) : this(showNumber, string.Empty, false)
+        public FileViewModel() : base()
         {
-            
+            m_FilePath = string.Empty;
+            IsEnabled = false;
+            IsValid = false;
+            InitValidArray(1);
+            InitCommands();
         }
-
-        public FileViewModel(int shownumber, string filePath, bool isEnabled)
+        
+        public FileViewModel(int shownumber, string filePath, bool isEnabled) : base(shownumber)
         {
-            #region Fields Init
-
-            m_ShowNumber = shownumber;
-            m_IsEnabled = isEnabled;                    
+            #region Fields Init            
+            m_IsEnabled = isEnabled;
+            IsValid = false;
             m_FilePath = filePath;
-
+            InitValidArray(1);
+            InitCommands();
             #endregion
         }
         #endregion
 
         #region Methods
+        private void InitCommands()
+        {
+            OnBrowseFileButtonPressed = new Command(
+                OnBrowseButtonPressedExecute,
+                CanOnBrowseButtonPressedExecute
+                );
+        }
+
         public override string ToString()
         {
-            return $"{m_ShowNumber}) {FilePath} Enabled: {IsEnabled} IsValid: {IsValid}";
+            return $"{base.ToString()}) {FilePath} Enabled: {IsEnabled} IsValid: {IsValid}";
         }
+
+        #region On Browse Button Pressed
+
+        private bool CanOnBrowseButtonPressedExecute(object p) => true;
+
+        private void OnBrowseButtonPressedExecute(object p)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            if (dialog.ShowDialog() ?? false)
+            { 
+                this.FilePath = dialog.FileName;
+            }
+        }
+
+        #endregion
         #endregion
     }
 }

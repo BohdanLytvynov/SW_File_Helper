@@ -4,7 +4,7 @@ using System.Windows.Threading;
 
 namespace SW_File_Helper.ViewModels.Base.VM
 {
-    public class ViewModelBase : INotifyPropertyChanged, IDataErrorInfo
+    public abstract class ViewModelBase : INotifyPropertyChanged
     {
         private Dispatcher m_Dispatcher;
 
@@ -19,17 +19,7 @@ namespace SW_File_Helper.ViewModels.Base.VM
                 m_Dispatcher = value;
             }
         }
-
-        #region IDataErrorInfo
-
-        public virtual string Error => throw new NotImplementedException();
-
-        public virtual string this[string columnName] => throw new NotImplementedException();
-
-        private bool[] m_ValidArray;
-
-        #endregion
-
+        
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -43,7 +33,6 @@ namespace SW_File_Helper.ViewModels.Base.VM
         #endregion
 
         #region Setter
-
         public virtual bool Set<T>(ref T field, T value, [CallerMemberName] string propName = "")
         {
             if (field == null)
@@ -60,43 +49,7 @@ namespace SW_File_Helper.ViewModels.Base.VM
         }
 
         #endregion
-
-        public ViewModelBase(int numberOfFieldsToValidate = 0)
-        {
-            m_ValidArray = new bool[numberOfFieldsToValidate];
-        }
-
-        protected bool ValidateFields(int start, int end)
-        {
-            for (int i = start; i <= end; i++)
-            {
-                if (!m_ValidArray[i])
-                    return false;
-            }
-
-            return true;
-        }
-
-        protected void ResetValidArray()
-        {
-            int len = m_ValidArray.Length;
-
-            for (int i = 0; i < len; i++)
-            {
-                m_ValidArray[i] = false;
-            }
-        }
-
-        protected void SetValidArrayValue(int pos, bool value)
-        {
-            m_ValidArray[pos] = value;
-        }
-
-        protected int GetValidArrayCount()
-        {
-            return m_ValidArray.Length;
-        }
-
+                
         protected void QueueJobToDispatcher(Action action)
         {
             if (action == null)

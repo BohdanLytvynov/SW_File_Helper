@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SW_File_Helper"
              xmlns:fileVM="clr-namespace:SW_File_Helper.ViewModels.Models"
+             xmlns:controls="clr-namespace:SW_File_Helper.Controls"
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <!--#region Colors -->
@@ -11,7 +12,7 @@
 
         <Color x:Key="BorderColor">black
         </Color>
-                <!--#endregion-->
+        <!--#endregion-->
 
         <!--#region Brushes -->
         <SolidColorBrush x:Key="GridSplitterBrush" Color="{StaticResource GridSplitterColor}"/>
@@ -41,14 +42,18 @@
 
         <Style x:Key="FilePathBorder" TargetType="Border">
             <Style.Setters>
-                <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
                 <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="Margin" Value="3"/>
+                <Setter Property="Padding" Value="5"/>
             </Style.Setters>
         </Style>
 
         <Style x:Key="TxtBoxInputStyle" TargetType="TextBox">
             <Style.Setters>
                 <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontSize" Value="14"/>
                 <Setter Property="Validation.ErrorTemplate">
                     <Setter.Value>
                         <ControlTemplate>
@@ -56,7 +61,7 @@
                                 <Grid>
                                     <AdornedElementPlaceholder/>
                                     <TextBlock Text="{Binding [0].ErrorContent}" Foreground="OrangeRed"
-                                       VerticalAlignment="Bottom" HorizontalAlignment="Left" 
+                                       VerticalAlignment="Bottom" HorizontalAlignment="Left"                                       
                                        />
                                 </Grid>
                             </Border>
@@ -69,9 +74,12 @@
                     <Setter Property="BorderBrush" Value="#FF23A829"/>
                     <Setter Property="BorderThickness" Value="2"/>
                 </Trigger>
+                <Trigger Property="Validation.HasError" Value="True">
+                    <Setter Property="Padding" Value="0,0,0,10"/>
+                </Trigger>
             </Style.Triggers>
         </Style>
-        
+
         <!--#endregion-->
 
         <!--#region DataTemplates -->
@@ -79,9 +87,16 @@
         <DataTemplate DataType="{x:Type fileVM:FileViewModel}">
             <Border Style="{StaticResource FilePathBorder}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding ShowNumber, UpdateSourceTrigger=PropertyChanged, 
-                        Mode=OneWay, StringFormat=№){0}}"/>
-                    <TextBox Style="{StaticResource TxtBoxInputStyle}">
+                    <TextBlock Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, 
+                        Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
+                    <TextBox Width="400" 
+                             Style="{StaticResource TxtBoxInputStyle}"
+                             MaxWidth="400"
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True" AcceptsTab="True"
+                             MaxLength="400"
+                             Margin="0,0,5,0"
+                             >
                         <TextBox.Text>
                             <Binding Path="FilePath"
                                 UpdateSourceTrigger="PropertyChanged" 
@@ -93,6 +108,53 @@
                             </Binding>
                         </TextBox.Text>
                     </TextBox>
+                    <Button Content="..." Width="20" Margin="0,0,5,0" Command="{Binding OnBrowseFileButtonPressed}"/>
+                    <CheckBox Content="Enabled" VerticalContentAlignment="Center"
+                                  IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                  />
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type fileVM:ListViewFileViewModel}">
+            <Border Style="{StaticResource FilePathBorder}">
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, 
+                Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
+                        <TextBox Width="400" 
+                     Style="{StaticResource TxtBoxInputStyle}"
+                     MaxWidth="400"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True" AcceptsTab="True"
+                     MaxLength="400"
+                     Margin="0,0,5,0"
+                     >
+                            <TextBox.Text>
+                                <Binding Path="FilePath"
+                        UpdateSourceTrigger="PropertyChanged" 
+                        Mode="TwoWay"
+                             >
+                                    <Binding.ValidationRules>
+                                        <DataErrorValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <Button Content="..." Width="20" Margin="0,0,5,0" Command="{Binding OnBrowseFileButtonPressed}"/>
+                        <CheckBox Content="Enabled" VerticalContentAlignment="Center"
+                          IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                          />
+
+                    </StackPanel>
+                    <controls:EditableListView 
+                        Title="Specify Destinations Here:"
+                        ListViewItemAssemblyPath="{Binding CurrentAssembly,
+                        UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        ListViewItemTypeName="{Binding FileViewModelTypeName,
+                        UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        Items="{Binding DestFiles, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        />
                 </StackPanel>
             </Border>
         </DataTemplate>
