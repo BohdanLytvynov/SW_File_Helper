@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SW_File_Helper", "SW_File_H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SW_File_Helper.BL", "SW_FileHelper.BL\SW_File_Helper.BL\SW_File_Helper.BL.csproj", "{073F8083-6F5C-4225-9D6B-BA4E7B57F53D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SW_File_Helper.DAL", "SW_File_Helper.DAL\SW_File_Helper.DAL\SW_File_Helper.DAL.csproj", "{FDA0760C-61C8-42D2-849E-646E48D627F1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{073F8083-6F5C-4225-9D6B-BA4E7B57F53D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{073F8083-6F5C-4225-9D6B-BA4E7B57F53D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{073F8083-6F5C-4225-9D6B-BA4E7B57F53D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDA0760C-61C8-42D2-849E-646E48D627F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDA0760C-61C8-42D2-849E-646E48D627F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDA0760C-61C8-42D2-849E-646E48D627F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDA0760C-61C8-42D2-849E-646E48D627F1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

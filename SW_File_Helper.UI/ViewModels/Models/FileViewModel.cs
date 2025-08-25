@@ -1,25 +1,16 @@
 ﻿using Microsoft.Win32;
 using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.ViewModels.Base.Commands;
-using SW_File_Helper.ViewModels.Base.VM;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace SW_File_Helper.ViewModels.Models
 {
     public class FileViewModel : CustomListViewItem
     {
-        #region Fields        
-
+        #region Fields
+        
         private string m_FilePath;
 
-        private bool m_IsValid;
-
-        private bool m_IsEnabled;
         #endregion
 
         #region Commands
@@ -36,8 +27,8 @@ namespace SW_File_Helper.ViewModels.Models
                 switch (columnName)
                 {
                     case nameof(FilePath):
-                        SetValidArrayValue(0, ValidationHelpers.IsPathValid(FilePath, out error));
-                        break;                    
+                        IsValid = ValidationHelpers.IsPathValid(FilePath, out error);
+                        break;
                 }
 
                 return error;
@@ -45,36 +36,20 @@ namespace SW_File_Helper.ViewModels.Models
         }
         #endregion
 
-        #region Properties        
-        public bool IsEnabled 
-        { get => m_IsEnabled; set => Set(ref m_IsEnabled, value); }
+        #region Properties
 
         public string FilePath 
         { get => m_FilePath; set=> Set(ref m_FilePath, value); }
-
-        public bool IsValid { get => m_IsValid; private set => m_IsValid = value; }
+        
         #endregion
 
         #region Ctor
         public FileViewModel() : base()
         {
             m_FilePath = string.Empty;
-            IsEnabled = false;
-            IsValid = false;
-            InitValidArray(1);
             InitCommands();
         }
-        
-        public FileViewModel(int shownumber, string filePath, bool isEnabled) : base(shownumber)
-        {
-            #region Fields Init            
-            m_IsEnabled = isEnabled;
-            IsValid = false;
-            m_FilePath = filePath;
-            InitValidArray(1);
-            InitCommands();
-            #endregion
-        }
+
         #endregion
 
         #region Methods
@@ -97,11 +72,23 @@ namespace SW_File_Helper.ViewModels.Models
 
         private void OnBrowseButtonPressedExecute(object p)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
+            if (this.GetType().Name.Equals(nameof(ListViewFileViewModel)))
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
 
-            if (dialog.ShowDialog() ?? false)
-            { 
-                this.FilePath = dialog.FileName;
+                if (dialog.ShowDialog() ?? false)
+                {
+                    this.FilePath = dialog.FileName;
+                }
+            }
+            else 
+            {
+                OpenFolderDialog dialog = new OpenFolderDialog();
+
+                if (dialog.ShowDialog() ?? false)
+                {
+                    this.FilePath = dialog.FolderName;
+                }
             }
         }
 

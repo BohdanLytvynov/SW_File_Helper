@@ -1,0 +1,53 @@
+﻿<Page x:Class="SW_File_Helper.Views.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SW_File_Helper.Views.Pages"
+      xmlns:vm="clr-namespace:SW_File_Helper.ViewModels.Views.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="SettingsPage"
+      d:DataContext="{d:DesignInstance vm:SettingsPageViewModel, IsDesignTimeCreatable=True}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Settings" Style="{StaticResource PageHeader}"/>
+        <Grid Grid.Row="1" Background="White">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Vertical" Grid.Column="0" Margin="10">
+                <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
+                    <TextBlock Text="File extension:" Style="{StaticResource TextBlockInputStyle}"/>
+                    <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200">
+                        <TextBox.Text>
+                            <Binding Path="FileExtensionForReplace" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                                <Binding.ValidationRules>
+                                    <DataErrorValidationRule/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
+                </StackPanel>
+            </StackPanel>
+
+            <StackPanel Orientation="Vertical" Grid.Column="1">
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="btnsGrid" Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="1" Content="Save" Style="{StaticResource Button}"
+                    Command="{Binding OnSaveButtonPressed}"/>
+        </Grid>
+    </Grid>
+</Page>

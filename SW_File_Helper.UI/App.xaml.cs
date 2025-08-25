@@ -1,9 +1,11 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.Converters;
+using SW_File_Helper.DAL.DataProviders.Settings;
+using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper.ViewModels.Views;
-using System.Configuration;
-using System.Data;
-using System.Reflection;
+using SW_File_Helper.ViewModels.Views.Pages;
+using SW_File_Helper.Views.Pages;
 using System.Windows;
 
 namespace SW_File_Helper
@@ -31,35 +33,39 @@ namespace SW_File_Helper
             var services = new ServiceCollection();
 
             #region Do Initial Setup Here
+            services.AddSingleton<ServiceWrapper>();
             services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<IFileViewModelToFileModelConverter, FileViewModelToFileModelConverter>();
+            services.AddSingleton<IFileProcessor, FileProcessor>();
+            services.AddSingleton<ISettingsDataProvider, SettingsDataProvider>();
+            services.AddSingleton<SettingsPageViewModel>();
+            services.AddSingleton(config =>
+            {
+                var vm = config.GetRequiredService<SettingsPageViewModel>();
+                var settingsPage = new SettingsPage();
+
+                settingsPage.DataContext = vm;
+                vm.Dispatcher = settingsPage.Dispatcher;
+
+                return settingsPage;
+
+            });
 
             services.AddSingleton(c =>
             {
                 var vm = c.GetRequiredService<MainWindowViewModel>();
-                var mainwindow = new MainWindow();
+                var mainWindow = new MainWindow();
+                vm.WindowClosed += (sender, args) =>
+                {
+                    mainWindow.Close();
+                };
 
-                mainwindow.DataContext = vm;
-                vm.Dispatcher = mainwindow.Dispatcher;
+                mainWindow.DataContext = vm;
+                vm.Dispatcher = mainWindow.Dispatcher;
 
-                return mainwindow;
+                return mainWindow;
             });
-            
-            //Mapper configuration
-            //var mapperConfig = new MapperConfiguration(mc =>
-            //{
-            //    var assembly = Assembly.GetExecutingAssembly();
 
-            //    var profiles = assembly.DefinedTypes.Where(t => t.BaseType != null && t.BaseType.Name.Equals(nameof(Profile))).Select(t => t);
-
-            //    foreach (var p in profiles)
-            //    {
-            //        mc.AddProfile((Profile)Activator.CreateInstance(p));
-            //    }
-            //});
-
-            //IMapper mapper = mapperConfig.CreateMapper();
-
-            //services.AddSingleton(mapper);
             #endregion
 
             return services;
@@ -73,7 +79,11 @@ namespace SW_File_Helper
         }
 
         protected override void OnExit(ExitEventArgs e)
-        {                        
+        {
+            var SettingsDataProvider = m_serviceProvider.GetService<ISettingsDataProvider>();
+
+            SettingsDataProvider.SaveData();
+
             base.OnExit(e);
         }
     }

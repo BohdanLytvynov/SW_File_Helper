@@ -20,7 +20,21 @@
         <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
         <!--#endregion-->
 
+        <!--#region Durations -->
+        <Duration x:Key="AnimDuration">0:0:0.2
+        </Duration>
+        <!--#endregion-->
+
         <!--#region Styles -->
+
+        <Style x:Key="PageHeader" TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="Background" Value="LightGray"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="16"/>
+            </Style.Setters>
+        </Style>
 
         <Style x:Key="GridSplitter_Vertical" TargetType="GridSplitter">
             <Style.Setters>
@@ -80,14 +94,43 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="TextBlockInputStyle" TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="0,0,10,0"/>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="InputFieldContainer" TargetType="StackPanel">
+            <Style.Setters>
+                <Setter Property="Margin" Value="0,3,0,0"/>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="Button" TargetType="Button">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="0,5,0,5"/>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="Background" Value="LightGray"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="FontSize" Value="16"/>
+            </Style.Setters>
+        </Style>
+
         <!--#endregion-->
 
         <!--#region DataTemplates -->
 
         <DataTemplate DataType="{x:Type fileVM:FileViewModel}">
-            <Border Style="{StaticResource FilePathBorder}">
+            <Border Style="{StaticResource FilePathBorder}" x:Name="brd" Background="White">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, 
+                    <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
                         Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
                     <TextBox Width="400" 
                              Style="{StaticResource TxtBoxInputStyle}"
@@ -114,13 +157,42 @@
                                   />
                 </StackPanel>
             </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, 
+                    UpdateSourceTrigger=PropertyChanged}" Value="False">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    From="White"
+                                    To="LightGray"
+                                    Duration="{StaticResource AnimDuration}"
+                                    Storyboard.TargetName="brd"
+                                    Storyboard.TargetProperty="Background.Color"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    From="LightGray"
+                                    To="White"
+                                    Duration="{StaticResource AnimDuration}"
+                                    Storyboard.TargetName="brd"
+                                    Storyboard.TargetProperty="Background.Color"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type fileVM:ListViewFileViewModel}">
-            <Border Style="{StaticResource FilePathBorder}">
+            <Border Style="{StaticResource FilePathBorder}" x:Name="brd" Background="White">
                 <StackPanel Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Id, UpdateSourceTrigger=PropertyChanged, 
+                        <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
                 Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
                         <TextBox Width="400" 
                      Style="{StaticResource TxtBoxInputStyle}"
@@ -145,9 +217,8 @@
                         <CheckBox Content="Enabled" VerticalContentAlignment="Center"
                           IsChecked="{Binding IsEnabled, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                           />
-
                     </StackPanel>
-                    <controls:EditableListView 
+                    <controls:EditableListView Height="230"
                         Title="Specify Destinations Here:"
                         ListViewItemAssemblyPath="{Binding CurrentAssembly,
                         UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
@@ -157,6 +228,35 @@
                         />
                 </StackPanel>
             </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsEnabled, 
+        UpdateSourceTrigger=PropertyChanged}" Value="False">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                        From="White"
+                        To="LightGray"
+                        Duration="{StaticResource AnimDuration}"
+                        Storyboard.TargetName="brd"
+                        Storyboard.TargetProperty="Background.Color"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                        From="LightGray"
+                        To="White"
+                        Duration="{StaticResource AnimDuration}"
+                        Storyboard.TargetName="brd"
+                        Storyboard.TargetProperty="Background.Color"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <!--#endregion-->

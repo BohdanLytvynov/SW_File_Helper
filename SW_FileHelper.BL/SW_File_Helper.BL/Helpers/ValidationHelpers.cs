@@ -14,7 +14,7 @@ namespace SW_File_Helper.BL.Helpers
                 return true;
             }
             error = string.Empty;
-            return false;            
+            return false;
         }
 
         public static bool IsPathValid(string path, out string error)

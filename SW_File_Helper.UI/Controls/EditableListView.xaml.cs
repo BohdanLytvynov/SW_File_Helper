@@ -153,7 +153,7 @@ namespace SW_File_Helper.Controls
                 item = itemObject.Unwrap() as CustomListViewItem ?? throw new InvalidCastException("Unable to cast to CustomListViewItem! ListViewItem type must be inherited from the CustomListViewItem and contain the Empty Constructor.");
                 var t = item.GetType();
                 Debug.WriteLine(t.FullName);
-                item.Id = Items.Count + 1;
+                item.Number = Items.Count + 1;
                 Items.Add(item);
                 this.ItemsListView.Items.Add(item);
             }

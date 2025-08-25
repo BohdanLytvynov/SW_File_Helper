@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,7">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="0*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="1*"/>
             </Grid.ColumnDefinitions>
@@ -34,6 +34,8 @@
             <GridSplitter Grid.Column="1"
                           Style="{StaticResource GridSplitter_Vertical}"/>
             <Grid Grid.Column="2" x:Name="Settings">
+                <Frame Grid.Row="0" Content="{Binding SettingsPage, UpdateSourceTrigger=PropertyChanged}" NavigationUIVisibility="Hidden">
+                </Frame>
             </Grid>
         </Grid>
 
@@ -46,6 +48,12 @@
                 <ColumnDefinition Width="120"/>
                 <ColumnDefinition Width="80"/>
             </Grid.ColumnDefinitions>
+            <Button Content="Process" Grid.Column="1" Style="{StaticResource Button}"
+                    Command="{Binding OnProcessButtonPressed}"
+                    />
+            <Button Content="Quite" Grid.Column="3" Style="{StaticResource Button}"
+                    Command="{Binding OnQuiteButtonPressed}"
+                    />
         </Grid>
     </Grid>
 </Window>

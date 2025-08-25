@@ -36,11 +36,6 @@ namespace SW_File_Helper.ViewModels.Models
             Init();
         }
 
-        public ListViewFileViewModel(int showNumber, string filePath, bool isEnabled) 
-            : base(showNumber, filePath, isEnabled)
-        {
-            Init();
-        }
         #endregion
 
         #region Methods
@@ -50,6 +45,22 @@ namespace SW_File_Helper.ViewModels.Models
 
             m_CurrentAssembly = Assembly.GetEntryAssembly().Location;
             m_FileViewModelTypeName = typeof(FileViewModel).FullName;
+        }
+
+        public void Validate()
+        { 
+            bool destFilesAreValid = true;
+
+            foreach (var item in m_destFiles)
+            {
+                if (!item.IsValid)
+                { 
+                    destFilesAreValid = false;
+                    break;
+                }
+            }
+
+            IsValid = destFilesAreValid;
         }
         #endregion
     }

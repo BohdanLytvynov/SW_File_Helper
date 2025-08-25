@@ -52,6 +52,11 @@ namespace SW_File_Helper.ViewModels.Base.VM
             return m_ValidArray.Length;
         }
 
+        protected int GetLastIndexOfValidArray()
+        {
+            return m_ValidArray.Length - 1;
+        }
+
         #endregion
     }
 }
