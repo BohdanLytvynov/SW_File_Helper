@@ -2,24 +2,22 @@
 using SW_File_Helper.BL.FileProcessors;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.Models;
+using SW_File_Helper.DAL.Repositories.Favorites;
+using SW_File_Helper.Interfaces;
 using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper.ViewModels.Base.Commands;
 using SW_File_Helper.ViewModels.Base.VM;
 using SW_File_Helper.ViewModels.Models;
+using SW_File_Helper.Views;
 using SW_File_Helper.Views.Pages;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
+using static SW_File_Helper.Controls.EditableListView;
 
 namespace SW_File_Helper.ViewModels.Views
 {
-    internal class MainWindowViewModel : ViewModelBase
+    internal class MainWindowViewModel : ViewModelBase, IManualDrawable
     {
         #region Events
 
@@ -28,6 +26,10 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region Fields
+        private float m_drawChildrenOnDelayValue;
+
+        private bool m_ManualDraw;
+
         private string m_title;
 
         private string m_currentAssembly;
@@ -38,22 +40,37 @@ namespace SW_File_Helper.ViewModels.Views
 
         private SettingsPage m_settingsPage;
 
-        private ServiceWrapper m_serviceWrapper;
+        private ServiceWrapper? m_serviceWrapper;
 
-        private IFileViewModelToFileModelConverter m_fileViewModelToFileModelConverter;
+        private IListViewFileViewModelToFileModelConverter? m_fileViewModelToFileModelConverter;
 
-        private IFileProcessor m_fileProcessor;
+        private IFileProcessor? m_fileProcessor;
+
+        private OnShowFavoritesFired m_OnShowFavoritesFired;
+
+        private OnAddToFavoritesFired m_OnAddToFavoritesFired;
+
+        private IListViewFileViewModelToFileModelConverter? m_listViewFileViewModelToFileModelConverter;
+
+        private IFavoritesRepository? m_favoritesRepository;
         #endregion
 
         #region Properties
         public ObservableCollection<CustomListViewItem> Files
         { get=>m_files; set=>m_files = value; }
-        public string Title { get => m_title; set => Set(ref m_title, value); }
+        public string Title 
+        { get => m_title; set => Set(ref m_title, value); }
         public string CurrentAssembly 
         { get=>m_currentAssembly; set=>Set(ref m_currentAssembly, value); }       
         public string ListViewFileViewModel
         { get=>m_ListViewFileViewModelTypeName; set=>Set(ref m_ListViewFileViewModelTypeName, value); }
-        public SettingsPage SettingsPage { get=> m_settingsPage; set=> Set(ref m_settingsPage, value); }
+        public SettingsPage SettingsPage 
+        { get=> m_settingsPage; set=> Set(ref m_settingsPage, value); }
+        public OnShowFavoritesFired ShowFavoritesFired 
+        { get=> m_OnShowFavoritesFired; set => Set(ref m_OnShowFavoritesFired, value); }
+        public OnAddToFavoritesFired AddToFavoritesFired 
+        { get=>m_OnAddToFavoritesFired; set => Set(ref m_OnAddToFavoritesFired, value); }
+        public bool ManualDraw { get => m_ManualDraw; set => Set(ref m_ManualDraw, value); }
         #endregion
 
         #region Commands
@@ -63,26 +80,58 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region Ctor
-        public MainWindowViewModel(ServiceWrapper serviceWrapper) : this()
+        public MainWindowViewModel(ServiceWrapper serviceWrapper,            
+            IListViewFileViewModelToFileModelConverter listViewFileViewModelToFileModelConverter,
+            IFavoritesRepository favoritesRepository) : this()
         {
             if(serviceWrapper == null) 
                 throw new ArgumentNullException(nameof(serviceWrapper));
+
+            if (listViewFileViewModelToFileModelConverter == null)
+                throw new ArgumentNullException(nameof(listViewFileViewModelToFileModelConverter));
+
+            if(favoritesRepository == null)
+                throw new ArgumentNullException(nameof(favoritesRepository));
 
             m_serviceWrapper = serviceWrapper;
 
             m_settingsPage = m_serviceWrapper.Services.GetRequiredService<SettingsPage>();
             m_fileViewModelToFileModelConverter = m_serviceWrapper
-                .Services.GetRequiredService<IFileViewModelToFileModelConverter>();
+                .Services.GetRequiredService<IListViewFileViewModelToFileModelConverter>();
             m_fileProcessor = m_serviceWrapper.Services.GetRequiredService<IFileProcessor>();
+            
+            m_favoritesRepository = favoritesRepository;            
+            m_listViewFileViewModelToFileModelConverter = listViewFileViewModelToFileModelConverter;
         }
 
         public MainWindowViewModel()
         {
             #region Field Initialization
+            m_drawChildrenOnDelayValue = 0.2f;
+            m_ManualDraw = false;
             m_files = new ObservableCollection<CustomListViewItem>();
             m_title = "SW File Helper v 1.0.0.0";
             m_currentAssembly = Assembly.GetEntryAssembly().Location;
             m_ListViewFileViewModelTypeName = typeof(ListViewFileViewModel).FullName;
+
+            m_OnShowFavoritesFired = new OnShowFavoritesFired((string favoritesType) => 
+            {
+                var favoritesWindow = m_serviceWrapper.Services.GetRequiredService<FavoritesWindow>();
+                favoritesWindow.OnFavoritesSelected += FavoritesWindow_OnFavoritesSelected;
+                favoritesWindow.Topmost = true;
+                favoritesWindow.SetTypeName(favoritesType);
+                favoritesWindow.ShowDialog();
+            });
+
+            m_OnAddToFavoritesFired = new OnAddToFavoritesFired((items) => 
+            {
+                foreach (var item in items)
+                {
+                    m_favoritesRepository
+                    .Add(m_listViewFileViewModelToFileModelConverter.Convert(item as ListViewFileViewModel));
+                }
+            });
+
             #endregion
 
             #region Init Commands
@@ -98,6 +147,31 @@ namespace SW_File_Helper.ViewModels.Views
                 );
 
             #endregion
+        }
+
+        private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
+        {
+            var files = m_favoritesRepository.GetAll(ids);
+
+            Task refreshChildrenTask = new Task(() =>
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(m_drawChildrenOnDelayValue));
+                foreach (var item in Files)
+                {
+                    (item as IManualDrawable)?.Draw();
+                }
+            });
+
+            foreach (var file in files)
+            {
+                var element = m_listViewFileViewModelToFileModelConverter.ReverseConvert((FileModel)file);
+                element.Number = Files.Count + 1;
+                Files.Add(element);
+            }
+            Draw();
+
+            //refreshChildrenTask.ContinueWith(t => t.Dispose());
+            refreshChildrenTask.Start();
         }
         #endregion
 
@@ -143,6 +217,11 @@ namespace SW_File_Helper.ViewModels.Views
         private void OnQuiteButtonPressedExecute(object p)
         { 
             WindowClosed?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Draw()
+        {
+            ManualDraw = !ManualDraw;
         }
         #endregion
 

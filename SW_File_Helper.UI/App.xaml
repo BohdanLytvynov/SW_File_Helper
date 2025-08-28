@@ -27,6 +27,12 @@
 
         <!--#region Styles -->
 
+        <Style x:Key="UnselectableListView" TargetType="ListViewItem">
+            <Style.Setters>
+                <Setter Property="Focusable" Value="False"/>
+            </Style.Setters>
+        </Style>
+
         <Style x:Key="PageHeader" TargetType="TextBlock">
             <Style.Setters>
                 <Setter Property="Background" Value="LightGray"/>
@@ -120,6 +126,14 @@
                 <Setter Property="TextAlignment" Value="Center"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
                 <Setter Property="FontSize" Value="16"/>
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="favoritesLVHeaders" TargetType="TextBlock">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="TextDecorations" Value="Underline"/>
             </Style.Setters>
         </Style>
 
@@ -225,6 +239,11 @@
                         ListViewItemTypeName="{Binding FileViewModelTypeName,
                         UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                         Items="{Binding DestFiles, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                        AddToFavoritesFired="{Binding AddToFavoritesFired, UpdateSourceTrigger=PropertyChanged,
+                        Mode=TwoWay}"
+                        ShowFavoritesFired="{Binding ShowFavoritesFired, UpdateSourceTrigger=PropertyChanged,
+                        Mode=TwoWay}"
+                        ManualDraw="{Binding ManualDraw, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                         />
                 </StackPanel>
             </Border>
@@ -252,6 +271,70 @@
                         Duration="{StaticResource AnimDuration}"
                         Storyboard.TargetName="brd"
                         Storyboard.TargetProperty="Background.Color"/>
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type fileVM:FavoriteFileViewModel}">
+            <Border Style="{StaticResource FilePathBorder}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
+                        Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
+                        Margin="0,0,5,0"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type fileVM:FavoriteListViewFileViewModel}">
+            <Border Style="{StaticResource FilePathBorder}" x:Name="brd" Background="Transparent">
+                <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
+                                    Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
+                            <TextBlock Text="{Binding Path, UpdateSourceTrigger=PropertyChanged,
+                                StringFormat=Source: {0}}"
+                                   Margin="0,0,5,0"/>
+                        </StackPanel>
+                        <TextBlock Text="Destination pathes:" Margin="0,5" 
+                                   Style="{StaticResource favoritesLVHeaders}"/>
+                        <ListView Height="150" ItemsSource="{Binding DestPathes, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    <ToggleButton Margin="40, 60" Width="100" Height="40" IsChecked="{Binding IsSelected, 
+                    UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+          Content="Select"
+          />
+                </StackPanel>
+            </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    Storyboard.TargetName="brd"
+                                    Storyboard.TargetProperty="Background.Color"
+                                    From="Transparent"
+                                    To="#64c3fe5c"
+                                    Duration="{StaticResource AnimDuration}"
+                                    />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                                    Storyboard.TargetName="brd"
+                                    Storyboard.TargetProperty="Background.Color"
+                                    From="#64c3fe5c"
+                                    To="Transparent"
+                                    Duration="{StaticResource AnimDuration}"
+                                    />
                             </Storyboard>
                         </BeginStoryboard>
                     </DataTrigger.ExitActions>

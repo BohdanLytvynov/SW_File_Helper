@@ -53,7 +53,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
             m_dataProvider = settingsDataProvider;
 
-            m_fileExtensionForReplace = m_dataProvider.Settings.FileExtensionForReplace;
+            m_fileExtensionForReplace = m_dataProvider.GetData().FileExtensionForReplace;
         }
 
         public SettingsPageViewModel()
@@ -86,7 +86,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         private void OnSaveButtonPressedExecute(object p)
         { 
-            var settings = m_dataProvider.Settings;
+            var settings = m_dataProvider.GetData();
             settings.FileExtensionForReplace = FileExtensionForReplace;
 
             m_dataProvider.SaveData();

@@ -1,24 +1,19 @@
 ﻿using SW_File_Helper.DAL.Models;
 using SW_File_Helper.ViewModels.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.Converters
 {
-    internal class FileViewModelToFileModelConverter : IFileViewModelToFileModelConverter
+    internal class ListViewFileViewModelToFileModelConverter : IListViewFileViewModelToFileModelConverter
     {
         public FileModel Convert(ListViewFileViewModel src)
         {
-            var fm = new FileModel() { PathToFile = src.FilePath };
+            var fm = new FileModel() { PathToFile = src.FilePath};
 
             foreach (var item in src.DestFiles)
             {
                 if (item.IsEnabled && item.IsValid)
                 {
-                    fm.PathToDst.Add((item as FileViewModel).FilePath);
+                    fm.PathToDst.Add((item as FileViewModel)!.FilePath);
                 }
             }
 
@@ -31,7 +26,7 @@ namespace SW_File_Helper.Converters
 
             foreach (var path in src.PathToDst)
             {
-                vm.DestFiles.Add(new FileViewModel() { FilePath = path, Number = vm.DestFiles.Count + 1 });
+                vm.AddFilePath(new FileViewModel() { FilePath = path});
             }
 
             return vm;

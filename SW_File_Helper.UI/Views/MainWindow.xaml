@@ -18,9 +18,9 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,7">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0*"/>
+                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="0.5*"/>
             </Grid.ColumnDefinitions>
 
             <controls:EditableListView
@@ -29,6 +29,9 @@
                 ListViewItemAssemblyPath="{Binding CurrentAssembly, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                 ListViewItemTypeName="{Binding ListViewFileViewModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                 Items="{Binding Files, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ShowFavoritesFired="{Binding ShowFavoritesFired, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                AddToFavoritesFired="{Binding AddToFavoritesFired, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ManualDraw="{Binding ManualDraw, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                 />
 
             <GridSplitter Grid.Column="1"

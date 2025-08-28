@@ -2,8 +2,8 @@
 
 namespace SW_File_Helper.DAL.DataProviders.Settings
 {
-    public interface ISettingsDataProvider : IDataProvider
+    public interface ISettingsDataProvider : IDataProvider<Models.Settings>
     {
-        public SW_File_Helper.DAL.Models.Settings Settings { get; protected set; }
+        
     }
 }

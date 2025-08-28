@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SW_File_Helper.DAL.Models
+﻿namespace SW_File_Helper.DAL.Models
 {
     public class Settings
     {
@@ -15,12 +9,10 @@ namespace SW_File_Helper.DAL.Models
         #endregion
 
         #region Ctor
-
         public Settings()
         {
-            
+            FileExtensionForReplace = string.Empty;
         }
-
         #endregion
     }
 }

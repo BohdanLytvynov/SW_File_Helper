@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-
-namespace SW_File_Helper.DAL.Models
+﻿namespace SW_File_Helper.DAL.Models
 {
-    public class ModelBase
+    public class ModelBase : IEquatable<ModelBase>
     {
-        public int Id { get; set; }
-        
-        public ModelBase()
+        public string TypeName { get; set; }
+
+        public Guid Id { get; set; }
+
+        public bool Equals(ModelBase? other)
         {
-            Id = -1;
+            if(other == null) return false;
+
+            return Id == other.Id;
         }
     }
 }

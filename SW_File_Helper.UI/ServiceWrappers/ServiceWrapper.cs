@@ -17,4 +17,9 @@ namespace SW_File_Helper.ServiceWrappers
             Services = serviceProvider;
         }
     }
+
+    public static class GlobalServiceWrapper
+    { 
+        public static IServiceProvider Services { get; set; }
+    }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SW_File_Helper.DAL.Helpers
+﻿namespace SW_File_Helper.DAL.Helpers
 {
     public static class IOHelper
     {
@@ -30,8 +24,13 @@ namespace SW_File_Helper.DAL.Helpers
         public static void CreateFileIfNotExists(string path)
         {
             CheckPathIsNull(path);
-            if(!IsFileExists(path))
-                File.Create(path);
+            if (!IsFileExists(path))
+            {
+                var fs = File.Create(path);
+                fs.Close();
+                fs.Dispose();
+            }
+            
         }
 
         public static string ReadAll(string path)

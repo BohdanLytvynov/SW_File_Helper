@@ -17,7 +17,7 @@ namespace SW_File_Helper.BL.FileProcessors
         {
             m_settingsDataProvider.LoadData();
 
-            var ext = m_settingsDataProvider.Settings.FileExtensionForReplace;
+            var ext = m_settingsDataProvider.GetData().FileExtensionForReplace;
             
             foreach (FileModel fileModel in fileModels)
             {

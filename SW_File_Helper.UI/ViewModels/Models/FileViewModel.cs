@@ -1,6 +1,9 @@
 ﻿using Microsoft.Win32;
 using SW_File_Helper.BL.Helpers;
+using SW_File_Helper.Interfaces;
 using SW_File_Helper.ViewModels.Base.Commands;
+using System.IO;
+using System.Text;
 using System.Windows.Input;
 
 namespace SW_File_Helper.ViewModels.Models
@@ -40,7 +43,7 @@ namespace SW_File_Helper.ViewModels.Models
 
         public string FilePath 
         { get => m_FilePath; set=> Set(ref m_FilePath, value); }
-        
+
         #endregion
 
         #region Ctor
@@ -72,27 +75,44 @@ namespace SW_File_Helper.ViewModels.Models
 
         private void OnBrowseButtonPressedExecute(object p)
         {
+            OpenFileDialog dialog = new OpenFileDialog();
+            string pathToFile = string.Empty;
+            if (dialog.ShowDialog() ?? false)
+            {
+                pathToFile = dialog.FileName;
+            }
+
             if (this.GetType().Name.Equals(nameof(ListViewFileViewModel)))
             {
-                OpenFileDialog dialog = new OpenFileDialog();
-
-                if (dialog.ShowDialog() ?? false)
-                {
-                    this.FilePath = dialog.FileName;
-                }
+                this.FilePath = pathToFile;
             }
-            else 
+            else
             {
-                OpenFolderDialog dialog = new OpenFolderDialog();
-
-                if (dialog.ShowDialog() ?? false)
-                {
-                    this.FilePath = dialog.FolderName;
-                }
+                this.FilePath = BuildFolderPath(pathToFile);
             }
         }
 
         #endregion
+
+        private string BuildFolderPath(string pathToFile)
+        {
+            StringBuilder res = new StringBuilder();
+
+            var arr = pathToFile.Split(Path.DirectorySeparatorChar).ToList();
+            arr.RemoveAt(arr.Count - 1);
+
+            for (int i = 0; i < arr.Count; i++)
+            {
+                res.Append(arr[i]);
+
+                if (i < arr.Count - 1)
+                {
+                    res.Append(Path.DirectorySeparatorChar);
+                }
+            }
+
+            return res.ToString();
+        }
         #endregion
     }
 }

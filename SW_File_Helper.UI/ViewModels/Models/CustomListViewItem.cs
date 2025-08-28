@@ -1,13 +1,15 @@
-﻿using SW_File_Helper.ViewModels.Base.VM;
+﻿using SW_File_Helper.Interfaces;
+using SW_File_Helper.ViewModels.Base.VM;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SW_File_Helper.ViewModels.Models
 {
-    public class CustomListViewItem : ValidatableViewModel, IEquatable<CustomListViewItem>
+    public abstract class CustomListViewItem : ValidatableViewModel, IEquatable<CustomListViewItem>
     {
         #region Fields
         private int m_number;
@@ -54,6 +56,7 @@ namespace SW_File_Helper.ViewModels.Models
 
             return this.m_number == other.m_number;
         }
+
         #endregion
     }
 }
