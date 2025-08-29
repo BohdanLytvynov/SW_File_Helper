@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SW_File_Helper.DAL\SW_File_Helper.DAL\SW_File_Helper.DAL.csproj" />
+    <ProjectReference Include="..\SW_File_Helper.DAL\SW_File_Helper.DAL.csproj" />
   </ItemGroup>
 
 </Project>

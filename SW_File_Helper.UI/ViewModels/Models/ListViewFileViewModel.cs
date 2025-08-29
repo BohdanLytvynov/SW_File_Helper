@@ -103,12 +103,14 @@ namespace SW_File_Helper.ViewModels.Models
 
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
         {
-            var files = m_favoritesRepository.GetAll(ids);
+            var files = m_favoritesRepository.GetAll(ids).ToList();
 
             foreach (var file in files)
             {
-                DestFiles.Add(m_FileViewModelToDestPathModelConverter.ReverseConvert((FileModel)file));
+                AddFilePath(m_FileViewModelToDestPathModelConverter.ReverseConvert((DestPathModel)file));
             }
+
+            Draw();
         }
 
         public void Validate()

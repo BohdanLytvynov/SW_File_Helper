@@ -145,7 +145,7 @@
             <Border Style="{StaticResource FilePathBorder}" x:Name="brd" Background="White">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
-                        Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
+                        StringFormat=№{0})}" Margin="0,0,5,0"/>
                     <TextBox Width="400" 
                              Style="{StaticResource TxtBoxInputStyle}"
                              MaxWidth="400"
@@ -279,14 +279,50 @@
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type fileVM:FavoriteFileViewModel}">
-            <Border Style="{StaticResource FilePathBorder}">
+            <Border Style="{StaticResource FilePathBorder}" x:Name="brd" 
+                    Background="Transparent">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="{Binding Number, UpdateSourceTrigger=PropertyChanged, 
-                        Mode=OneWay, StringFormat=№{0})}" Margin="0,0,5,0"/>
-                    <TextBlock Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}"
+                        StringFormat=№{0})}" Margin="0,0,5,0"/>
+                    <TextBlock Text="{Binding Path, UpdateSourceTrigger=PropertyChanged,
+                        StringFormat=Destination: {0}}"
                         Margin="0,0,5,0"/>
+                    <ToggleButton Content="Select" Margin="15,0" 
+                                  IsChecked="{Binding IsSelected, 
+                        UpdateSourceTrigger=PropertyChanged,
+                        Mode=TwoWay}"/>
                 </StackPanel>
             </Border>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                    <DataTrigger.EnterActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                        Storyboard.TargetName="brd"
+                        Storyboard.TargetProperty="Background.Color"
+                        From="Transparent"
+                        To="#64c3fe5c"
+                        Duration="{StaticResource AnimDuration}"
+                        />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.EnterActions>
+                    <DataTrigger.ExitActions>
+                        <BeginStoryboard>
+                            <Storyboard>
+                                <ColorAnimation
+                        Storyboard.TargetName="brd"
+                        Storyboard.TargetProperty="Background.Color"
+                        From="#64c3fe5c"
+                        To="Transparent"
+                        Duration="{StaticResource AnimDuration}"
+                        />
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </DataTrigger.ExitActions>
+                </DataTrigger>
+            </DataTemplate.Triggers>
         </DataTemplate>
 
         <DataTemplate DataType="{x:Type fileVM:FavoriteListViewFileViewModel}">
