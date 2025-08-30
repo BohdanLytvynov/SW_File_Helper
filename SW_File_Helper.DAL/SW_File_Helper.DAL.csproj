@@ -14,4 +14,8 @@
     <Folder Include="DataProviders\FileModels\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SW_File_Helper.Common\SW_File_Helper.Common.csproj" />
+  </ItemGroup>
+
 </Project>

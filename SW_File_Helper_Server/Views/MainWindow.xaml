@@ -1,0 +1,99 @@
+﻿<Window x:Class="SW_File_Helper_Server.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SW_File_Helper_Server"
+        xmlns:vm="clr-namespace:SW_File_Helper_Server.ViewModels"
+        mc:Ignorable="d"
+        Title="{Binding Title}" Height="450" Width="800"
+        d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="436*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="353*"/>
+        </Grid.ColumnDefinitions>
+        <Border Style="{StaticResource OutputBorder}" Margin="10">
+            <RichTextBox Margin="5" Style="{StaticResource OutputWindow}"/>
+        </Border>
+        <GridSplitter Grid.Column="1" Style="{StaticResource GridSplitter_Vertical}"/>
+        <Border Style="{StaticResource OutputBorder}" Margin="10" Grid.Column="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Row="0" Style="{StaticResource PageHeader}"
+                           Margin="2,0" Text="Server Settings"/>
+                <Grid Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="20"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="20"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding HostName, UpdateSourceTrigger=PropertyChanged,
+                        StringFormat='Host Name: {0}'}" Grid.Column="1" Grid.Row="1"
+                               TextAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="1">
+                        <TextBlock Text="Select IP:" 
+                                   Style="{StaticResource TextBlockInputStyle}"/>
+                        <ComboBox Width="200" IsEditable="True"
+                                  ItemsSource="{Binding IPAddresses, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedIndex="{Binding SelectedIPIndex, 
+                            UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
+                        <TextBlock Style="{StaticResource TextBlockInputStyle}"
+                                       Text="Message Listener Port: "/>
+                        <TextBox MinWidth="80" Style="{StaticResource TxtBoxInputStyle}">
+                            <TextBox.Text>
+                                <Binding Path="MessageServerPortString" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                    <Binding.ValidationRules>
+                                        <DataErrorValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                        <TextBlock Style="{StaticResource TextBlockInputStyle}"
+                   Text="File Listener Port: "/>
+                        <TextBox Margin="34,0,0,0" MinWidth="80" Style="{StaticResource TxtBoxInputStyle}">
+                            <TextBox.Text>
+                                <Binding Path="FileServerPortString" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                    <Binding.ValidationRules>
+                                        <DataErrorValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                    </StackPanel>
+                    <Grid Grid.Row="9" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="1" 
+                                Command="{Binding OnStartServersButtonPressed}"
+                                Content="{Binding StartButtonContent, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

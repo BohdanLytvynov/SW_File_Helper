@@ -1,6 +1,6 @@
 ﻿namespace SW_File_Helper.ViewModels.Base.Commands
 {
-    internal class Command : CommandBase
+    public class Command : CommandBase
     {
         private readonly Action<object> m_execute;
 

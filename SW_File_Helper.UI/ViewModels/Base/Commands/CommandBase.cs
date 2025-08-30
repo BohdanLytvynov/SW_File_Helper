@@ -2,7 +2,7 @@
 
 namespace SW_File_Helper.ViewModels.Base.Commands
 {
-    internal abstract class CommandBase : ICommand
+    public abstract class CommandBase : ICommand
     {
         public event EventHandler CanExecuteChanged
         {

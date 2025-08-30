@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SW_File_Helper.ServiceWrappers
 {
-    internal class ServiceWrapper
+    public class ServiceWrapper
     {
         public IServiceProvider Services { get; }
 
@@ -18,7 +18,7 @@ namespace SW_File_Helper.ServiceWrappers
         }
     }
 
-    public static class GlobalServiceWrapper
+    internal static class GlobalServiceWrapper
     { 
         public static IServiceProvider Services { get; set; }
     }

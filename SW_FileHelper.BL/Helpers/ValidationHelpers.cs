@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net;
+using System.Text.RegularExpressions;
 
 namespace SW_File_Helper.BL.Helpers
 {
@@ -26,6 +27,33 @@ namespace SW_File_Helper.BL.Helpers
             //    error = "Incorrect path!";
             //    return false;
             //}
+
+            return true;
+        }
+
+        public static bool IsIPAddressValid(string value, out string error)
+        { 
+            if(IsTextEmpty(value, out error)) return false;
+            IPAddress iPAddress_;
+
+            if (!IPAddress.TryParse(value, out iPAddress_))
+            {
+                error = "Invalid input!";
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool IsIntegerNumberValid(string value, out string error)
+        {
+            if (IsTextEmpty(value, out error)) return false;
+
+            if (!int.TryParse(value, out int res_))
+            {
+                error = "Invalid input!";
+                return false;
+            }
 
             return true;
         }
