@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SW_File_Helper_Server"
         xmlns:vm="clr-namespace:SW_File_Helper_Server.ViewModels"
+        xmlns:controls="clr-namespace:SW_File_Helper.Controls;assembly=SW_File_Helper"
         mc:Ignorable="d"
         Title="{Binding Title}" Height="450" Width="800"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
@@ -15,7 +16,7 @@
             <ColumnDefinition Width="353*"/>
         </Grid.ColumnDefinitions>
         <Border Style="{StaticResource OutputBorder}" Margin="10">
-            <RichTextBox Margin="5" Style="{StaticResource OutputWindow}"/>
+            <controls:Console />
         </Border>
         <GridSplitter Grid.Column="1" Style="{StaticResource GridSplitter_Vertical}"/>
         <Border Style="{StaticResource OutputBorder}" Margin="10" Grid.Column="2">

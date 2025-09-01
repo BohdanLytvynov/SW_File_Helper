@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Favorites;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Repositories.Favorites;
+using SW_File_Helper.Loggers;
 using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper.ViewModels.Views;
 using SW_File_Helper.ViewModels.Views.Pages;
@@ -47,6 +49,7 @@ namespace SW_File_Helper
             services.AddSingleton<IFileViewModelToFavoriteFileViewModelConverter, FileViewModelToFavoriteFileViewModelConverter>();
             services.AddSingleton<IFileViewModelToDestPathModelConverter, FileViewModelToDestPathModelConverter>();
             services.AddSingleton<IFileProcessor, FileProcessor>();
+            services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<ISettingsDataProvider, SettingsDataProvider>();
             services.AddSingleton<SettingsPageViewModel>();
 

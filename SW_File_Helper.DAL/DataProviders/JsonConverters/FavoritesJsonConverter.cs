@@ -21,8 +21,7 @@ namespace SW_File_Helper.DAL.DataProviders.JsonConverters
 
             foreach (var obj in jArray)
             {
-                Guid id = (Guid)obj["Id"];
-                string pathToFile = obj["PathToFile"].ToString();
+                Guid id = Guid.Parse(obj["Id"].ToString());
                 string typeName = obj["TypeName"].ToString();
 
                 switch (typeName)
@@ -31,11 +30,10 @@ namespace SW_File_Helper.DAL.DataProviders.JsonConverters
                         models.Add(new DestPathModel()
                         {
                             Id = id,
-                            PathToFile = pathToFile
+                            PathToFile = obj["PathToFile"].ToString()
                         });
                         break;
                     case nameof(FileModel):
-
                         JArray array = (JArray)obj["PathToDst"];
                         List<string> destinations = new List<string>();
 
@@ -47,9 +45,14 @@ namespace SW_File_Helper.DAL.DataProviders.JsonConverters
                         models.Add(new FileModel()
                         {
                             Id = id,
-                            PathToFile = pathToFile,
+                            PathToFile = obj["PathToFile"].ToString(),
                             PathToDst = destinations
                         });
+                        break;
+                    case nameof(IPAddressFavorites):
+                        models.Add(new IPAddressFavorites() { Id = id, 
+                            IPAddress = obj["IPAddress"].ToString() });
+
                         break;
                     default:
                         throw new NotSupportedException($"Unknown type for DeSerialization! Type name is: {objectType.Name}");

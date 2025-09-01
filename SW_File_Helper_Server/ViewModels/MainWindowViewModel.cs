@@ -1,9 +1,12 @@
 ﻿using SW_File_Helper.BL.Helpers;
+using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.TCPMessageListener;
 using SW_File_Helper.DAL.Models.TCPModels;
+using SW_File_Helper.Loggers;
 using SW_File_Helper.ViewModels.Base.VM;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Windows.Documents;
 using System.Windows.Input;
 using UICommand = SW_File_Helper.ViewModels.Base.Commands.Command;
 
@@ -21,9 +24,12 @@ namespace SW_File_Helper_Server.ViewModels
         private bool m_StartStop; //Start = false Stop = true;
         private string m_StartButtonContent;
 
+        private IConsoleLogger m_ConsoleLogger;
         #region Servers
 
         private ITCPMessageListener m_MessageListener;
+
+        private List<Paragraph> m_paragraph;
 
         #endregion
 
@@ -87,20 +93,36 @@ namespace SW_File_Helper_Server.ViewModels
 
         public string StartButtonContent 
         { get => m_StartButtonContent; set => Set(ref m_StartButtonContent, value); }
+
+        public List<Paragraph> Paragraph
+        { get => m_paragraph; set=>Set(ref m_paragraph, value); }
         #endregion
 
         #region Ctor
-        public MainWindowViewModel(ITCPMessageListener tCPMessageListener)
+        public MainWindowViewModel(ITCPMessageListener tCPMessageListener, IConsoleLogger consoleLogger) : this()
         {
             if(tCPMessageListener == null)
                 throw new ArgumentNullException(nameof(tCPMessageListener));
 
+            if(consoleLogger == null)
+                throw new ArgumentNullException(nameof(consoleLogger));
+
             m_MessageListener = tCPMessageListener;
+
+            m_ConsoleLogger = consoleLogger;
+
+            m_ConsoleLogger.OnLogProcessed += M_ConsoleLogger_OnLogProcessed;
+        }
+
+        private void M_ConsoleLogger_OnLogProcessed(object arg1, string arg2, SW_File_Helper.BL.Loggers.Enums.LogType arg3)
+        {
+            
         }
 
         public MainWindowViewModel()
         {
             #region Init Fields
+            m_paragraph = new List<Paragraph>();
             m_StartStop = false;
             m_StartButtonContent = String.Empty;
             m_MessageServerPortString = String.Empty;
@@ -135,7 +157,7 @@ namespace SW_File_Helper_Server.ViewModels
             => m_SelectedIPIndex >= 0 && ValidateFields(0, GetLastIndexOfValidArray());
 
         private void OnStartServersButtonPressedExecute(object p)
-        { 
+        {
             m_StartStop = !m_StartStop;
             
             CalculateStartButtonContent();
@@ -164,7 +186,7 @@ namespace SW_File_Helper_Server.ViewModels
         {
             m_MessageListener.Endpoint 
                 = new IPEndPoint(
-                    IPAddress.Parse(IPAddresses[SelectedIPIndex]), 
+                    IPAddress.Parse(IPAddresses[SelectedIPIndex]),
                     int.Parse(MessageServerPortString));
 
             m_MessageListener.Init();
@@ -172,18 +194,18 @@ namespace SW_File_Helper_Server.ViewModels
         }
 
         private void StopServers()
-        { 
+        {
             m_MessageListener.Stop();
         }
 
         public void OnMessageRecieved(Message message)
-        { 
-        
+        {
+            
         }
 
         public void OnFileRecieved(Message message)
         {
-            var files = (ProcessFilesCommand)message;
+            var file = (ProcessFilesCommand)message;
         }
         #endregion
     }

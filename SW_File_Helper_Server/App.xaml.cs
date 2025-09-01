@@ -4,6 +4,7 @@ using SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors;
 using SW_File_Helper.BL.Net.TCPCommandListener;
 using SW_File_Helper.BL.Net.TCPMessageListener;
+using SW_File_Helper.Loggers;
 using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper_Server.ViewModels;
 using System.Windows;
@@ -34,7 +35,9 @@ namespace SW_File_Helper_Server
 
             #region Do Initial Setup Here
             services.AddSingleton<ServiceWrapper>();
+            services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<MainWindowViewModel>();
+            services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<ITCPMessageListener, TCPMessageListener>();
             services.AddSingleton(c =>
             {

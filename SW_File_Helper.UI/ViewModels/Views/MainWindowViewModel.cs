@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
+using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
 using SW_File_Helper.DAL.Repositories.Favorites;
 using SW_File_Helper.Interfaces;
+using SW_File_Helper.Loggers;
 using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper.ViewModels.Base.Commands;
 using SW_File_Helper.ViewModels.Base.VM;
@@ -11,6 +14,7 @@ using SW_File_Helper.ViewModels.Models;
 using SW_File_Helper.Views;
 using SW_File_Helper.Views.Pages;
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Reflection;
 using System.Windows.Input;
 using static SW_File_Helper.Controls.EditableListView;
@@ -53,6 +57,10 @@ namespace SW_File_Helper.ViewModels.Views
         private IListViewFileViewModelToFileModelConverter? m_listViewFileViewModelToFileModelConverter;
 
         private IFavoritesRepository? m_favoritesRepository;
+
+        private ISettingsDataProvider? m_settingsDataProvider;
+
+        private IConsoleLogger m_consoleLogger;
         #endregion
 
         #region Properties
@@ -82,7 +90,9 @@ namespace SW_File_Helper.ViewModels.Views
         #region Ctor
         public MainWindowViewModel(ServiceWrapper serviceWrapper,            
             IListViewFileViewModelToFileModelConverter listViewFileViewModelToFileModelConverter,
-            IFavoritesRepository favoritesRepository) : this()
+            IFavoritesRepository favoritesRepository,
+            ISettingsDataProvider settingsDataProvider,
+            IConsoleLogger consoleLogger) : this()
         {
             if(serviceWrapper == null) 
                 throw new ArgumentNullException(nameof(serviceWrapper));
@@ -93,6 +103,12 @@ namespace SW_File_Helper.ViewModels.Views
             if(favoritesRepository == null)
                 throw new ArgumentNullException(nameof(favoritesRepository));
 
+            if(settingsDataProvider == null)
+                throw new ArgumentNullException(nameof(settingsDataProvider));
+
+            if(consoleLogger == null)
+                throw new ArgumentNullException(nameof(consoleLogger));
+
             m_serviceWrapper = serviceWrapper;
 
             m_settingsPage = m_serviceWrapper.Services.GetRequiredService<SettingsPage>();
@@ -100,8 +116,11 @@ namespace SW_File_Helper.ViewModels.Views
                 .Services.GetRequiredService<IListViewFileViewModelToFileModelConverter>();
             m_fileProcessor = m_serviceWrapper.Services.GetRequiredService<IFileProcessor>();
             
-            m_favoritesRepository = favoritesRepository;            
+            m_favoritesRepository = favoritesRepository;
             m_listViewFileViewModelToFileModelConverter = listViewFileViewModelToFileModelConverter;
+            m_settingsDataProvider = settingsDataProvider;
+
+            m_consoleLogger = consoleLogger;
         }
 
         public MainWindowViewModel()
@@ -196,16 +215,34 @@ namespace SW_File_Helper.ViewModels.Views
 
         private void OnProcessButtonPressedExecute(object p)
         {
-            var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
+            var settings = m_settingsDataProvider.GetData();
+            var hostIP = settings.HostIPAddress;
+            var msgListenerPort = settings.MessageListenerPort;
+            var fileListenerPort = settings.FileListenerPort;
 
-            List<FileModel> fileModels = new List<FileModel>();
-
-            foreach (var file in filesToProcess)
+            if (settings.EnableRemoteMode)
             {
-                fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
-            }
+                using (TCPClient client = new TCPClient(m_consoleLogger) 
+                { Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort) })
+                {
+                    client.Init();
 
-            m_fileProcessor.Process(fileModels);
+                    client.SendMessage("My test Message...");
+                }
+            }
+            else
+            {
+                var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
+
+                List<FileModel> fileModels = new List<FileModel>();
+
+                foreach (var file in filesToProcess)
+                {
+                    fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
+                }
+
+                m_fileProcessor.Process(fileModels);
+            }
         }
 
         #endregion

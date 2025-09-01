@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SW_File_Helper.DAL.Models.TCPModels.Enums;
 
 namespace SW_File_Helper.DAL.Models.TCPModels
 {
@@ -10,7 +6,7 @@ namespace SW_File_Helper.DAL.Models.TCPModels
     {
         public Command()
         {
-            MessageType = Enums.MessageType.Command;
+            MessageType = MessageType.Command;
             Text = string.Empty;
         }
     }
