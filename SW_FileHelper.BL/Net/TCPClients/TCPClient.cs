@@ -48,8 +48,16 @@ namespace SW_File_Helper.BL.Net.TCPClients
 
             if (instance == null)
             {
-                instance = new TcpClient(Endpoint);
-                SetInstance(instance);
+                try
+                {
+                    instance = new TcpClient(Endpoint);
+                    SetInstance(instance);
+                    Logger.Ok("Client initialized successfuly.");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error on initialization of the TcpClient! Error: {ex}");
+                }                
             }
 
             if (SendingBufferSize == 0)

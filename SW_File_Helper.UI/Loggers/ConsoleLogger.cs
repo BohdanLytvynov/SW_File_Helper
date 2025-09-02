@@ -1,11 +1,9 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
-using SW_File_Helper.BL.LogProcessors.Base;
 using SW_File_Helper.LogProcessors.DebugLogProcessor;
 using SW_File_Helper.LogProcessors.ErrorLogProcessor;
 using SW_File_Helper.LogProcessors.InfoLogProcessor;
 using SW_File_Helper.LogProcessors.OkLogProcessor;
 using SW_File_Helper.LogProcessors.WarningLogProcessor;
-using System.Windows.Documents;
 
 namespace SW_File_Helper.Loggers
 {

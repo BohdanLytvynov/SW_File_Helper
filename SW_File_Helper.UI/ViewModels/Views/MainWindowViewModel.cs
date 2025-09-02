@@ -11,11 +11,14 @@ using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper.ViewModels.Base.Commands;
 using SW_File_Helper.ViewModels.Base.VM;
 using SW_File_Helper.ViewModels.Models;
+using SW_File_Helper.ViewModels.Models.Logs.Base;
 using SW_File_Helper.Views;
 using SW_File_Helper.Views.Pages;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using static SW_File_Helper.Controls.EditableListView;
 
@@ -37,7 +40,7 @@ namespace SW_File_Helper.ViewModels.Views
         private string m_title;
 
         private string m_currentAssembly;
-        
+
         private string m_ListViewFileViewModelTypeName;
 
         private ObservableCollection<CustomListViewItem> m_files;
@@ -61,24 +64,39 @@ namespace SW_File_Helper.ViewModels.Views
         private ISettingsDataProvider? m_settingsDataProvider;
 
         private IConsoleLogger m_consoleLogger;
+
+        private GridLength m_infoGridWidth;
+
+        private LogViewModel m_LogMessage;
+        private ResourceDictionary m_commonResourceDictionary;
+
+        private const double m_showInfoDoublePercentage = 50;
+        private const double m_showInfoMoveSpeed = 2;
+        private const float m_delayInfoMoveSpeed = 20;
         #endregion
 
         #region Properties
         public ObservableCollection<CustomListViewItem> Files
-        { get=>m_files; set=>m_files = value; }
-        public string Title 
+        { get => m_files; set => m_files = value; }
+        public string Title
         { get => m_title; set => Set(ref m_title, value); }
-        public string CurrentAssembly 
-        { get=>m_currentAssembly; set=>Set(ref m_currentAssembly, value); }       
+        public string CurrentAssembly
+        { get => m_currentAssembly; set => Set(ref m_currentAssembly, value); }
         public string ListViewFileViewModel
-        { get=>m_ListViewFileViewModelTypeName; set=>Set(ref m_ListViewFileViewModelTypeName, value); }
-        public SettingsPage SettingsPage 
-        { get=> m_settingsPage; set=> Set(ref m_settingsPage, value); }
-        public OnShowFavoritesFired ShowFavoritesFired 
-        { get=> m_OnShowFavoritesFired; set => Set(ref m_OnShowFavoritesFired, value); }
-        public OnAddToFavoritesFired AddToFavoritesFired 
-        { get=>m_OnAddToFavoritesFired; set => Set(ref m_OnAddToFavoritesFired, value); }
-        public bool ManualDraw { get => m_ManualDraw; set => Set(ref m_ManualDraw, value); }
+        { get => m_ListViewFileViewModelTypeName; set => Set(ref m_ListViewFileViewModelTypeName, value); }
+        public SettingsPage SettingsPage
+        { get => m_settingsPage; set => Set(ref m_settingsPage, value); }
+        public OnShowFavoritesFired ShowFavoritesFired
+        { get => m_OnShowFavoritesFired; set => Set(ref m_OnShowFavoritesFired, value); }
+        public OnAddToFavoritesFired AddToFavoritesFired
+        { get => m_OnAddToFavoritesFired; set => Set(ref m_OnAddToFavoritesFired, value); }
+        public bool ManualDraw
+        { get => m_ManualDraw; set => Set(ref m_ManualDraw, value); }
+
+        public GridLength InfoGridWidth
+        { get => m_infoGridWidth; set => Set(ref m_infoGridWidth, value); }
+        public LogViewModel LogMessage
+        { get=> m_LogMessage; set => Set(ref m_LogMessage, value); }
         #endregion
 
         #region Commands
@@ -88,25 +106,25 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region Ctor
-        public MainWindowViewModel(ServiceWrapper serviceWrapper,            
+        public MainWindowViewModel(ServiceWrapper serviceWrapper,
             IListViewFileViewModelToFileModelConverter listViewFileViewModelToFileModelConverter,
             IFavoritesRepository favoritesRepository,
             ISettingsDataProvider settingsDataProvider,
             IConsoleLogger consoleLogger) : this()
         {
-            if(serviceWrapper == null) 
+            if (serviceWrapper == null)
                 throw new ArgumentNullException(nameof(serviceWrapper));
 
             if (listViewFileViewModelToFileModelConverter == null)
                 throw new ArgumentNullException(nameof(listViewFileViewModelToFileModelConverter));
 
-            if(favoritesRepository == null)
+            if (favoritesRepository == null)
                 throw new ArgumentNullException(nameof(favoritesRepository));
 
-            if(settingsDataProvider == null)
+            if (settingsDataProvider == null)
                 throw new ArgumentNullException(nameof(settingsDataProvider));
 
-            if(consoleLogger == null)
+            if (consoleLogger == null)
                 throw new ArgumentNullException(nameof(consoleLogger));
 
             m_serviceWrapper = serviceWrapper;
@@ -115,17 +133,28 @@ namespace SW_File_Helper.ViewModels.Views
             m_fileViewModelToFileModelConverter = m_serviceWrapper
                 .Services.GetRequiredService<IListViewFileViewModelToFileModelConverter>();
             m_fileProcessor = m_serviceWrapper.Services.GetRequiredService<IFileProcessor>();
-            
+
             m_favoritesRepository = favoritesRepository;
             m_listViewFileViewModelToFileModelConverter = listViewFileViewModelToFileModelConverter;
             m_settingsDataProvider = settingsDataProvider;
 
             m_consoleLogger = consoleLogger;
+            m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
+        }
+
+        private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
+        {
+            LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
         public MainWindowViewModel()
         {
             #region Field Initialization
+            m_commonResourceDictionary = new ResourceDictionary();
+            m_commonResourceDictionary.Source = new Uri("/SW_File_Helper;component/Resources/ViewsCommon.xaml", UriKind.RelativeOrAbsolute);
+
+            m_LogMessage = new LogViewModel("Console loaded...", m_commonResourceDictionary["consoleMsg"] as Style);
+            m_infoGridWidth = new GridLength(0, GridUnitType.Pixel);
             m_drawChildrenOnDelayValue = 0.2f;
             m_ManualDraw = false;
             m_files = new ObservableCollection<CustomListViewItem>();
@@ -133,7 +162,7 @@ namespace SW_File_Helper.ViewModels.Views
             m_currentAssembly = Assembly.GetEntryAssembly().Location;
             m_ListViewFileViewModelTypeName = typeof(ListViewFileViewModel).FullName;
 
-            m_OnShowFavoritesFired = new OnShowFavoritesFired((string favoritesType) => 
+            m_OnShowFavoritesFired = new OnShowFavoritesFired((string favoritesType) =>
             {
                 var favoritesWindow = m_serviceWrapper.Services.GetRequiredService<FavoritesWindow>();
                 favoritesWindow.OnFavoritesSelected += FavoritesWindow_OnFavoritesSelected;
@@ -142,7 +171,7 @@ namespace SW_File_Helper.ViewModels.Views
                 favoritesWindow.ShowDialog();
             });
 
-            m_OnAddToFavoritesFired = new OnAddToFavoritesFired((items) => 
+            m_OnAddToFavoritesFired = new OnAddToFavoritesFired((items) =>
             {
                 foreach (var item in items)
                 {
@@ -161,13 +190,15 @@ namespace SW_File_Helper.ViewModels.Views
                 );
 
             OnQuiteButtonPressed = new Command(
-                OnQuiteButtonPressedExecute, 
+                OnQuiteButtonPressedExecute,
                 CanOnQuiteButtonPressedExecute
                 );
 
             #endregion
         }
+        #endregion
 
+        #region Methods
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
         {
             var files = m_favoritesRepository.GetAll(ids);
@@ -192,21 +223,19 @@ namespace SW_File_Helper.ViewModels.Views
             //refreshChildrenTask.ContinueWith(t => t.Dispose());
             refreshChildrenTask.Start();
         }
-        #endregion
 
-        #region Methods
         #region On Process Button Pressed
 
         private bool CanOnProcessButtonPressedExecute(object p)
         {
-            if(Files.Count == 0)
+            if (Files.Count == 0)
                 return false;
 
             foreach (var item in Files)
             {
                 (item as ListViewFileViewModel)!.Validate();
 
-                if(!item.IsValid && item.IsEnabled)
+                if (!item.IsValid && item.IsEnabled)
                     return false;
             }
 
@@ -222,13 +251,17 @@ namespace SW_File_Helper.ViewModels.Views
 
             if (settings.EnableRemoteMode)
             {
-                using (TCPClient client = new TCPClient(m_consoleLogger) 
+                ShowInfo();
+
+                using (TCPClient client = new TCPClient(m_consoleLogger)
                 { Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort) })
                 {
                     client.Init();
 
                     client.SendMessage("My test Message...");
                 }
+
+                HideInfo();
             }
             else
             {
@@ -252,13 +285,66 @@ namespace SW_File_Helper.ViewModels.Views
         private bool CanOnQuiteButtonPressedExecute(object p) => true;
 
         private void OnQuiteButtonPressedExecute(object p)
-        { 
+        {
             WindowClosed?.Invoke(this, EventArgs.Empty);
         }
 
         public void Draw()
         {
             ManualDraw = !ManualDraw;
+        }
+        #endregion
+
+        #region Info Grid Control System
+        private void ShowInfo()
+        {
+            //Get current window width
+            double windowWidth = Application.Current.MainWindow.ActualWidth;
+            var width = GetValueFromPercent(windowWidth, m_showInfoDoublePercentage);
+
+            Task showInfo = new Task(() => { 
+                var currentWidth = InfoGridWidth.Value;//Must be 0 during start
+
+                while (currentWidth <= width)
+                {
+                    QueueJobToDispatcher(() => 
+                    {
+                        InfoGridWidth = new GridLength(currentWidth, GridUnitType.Pixel);
+                    });
+
+                    currentWidth += m_showInfoMoveSpeed;
+
+                    Thread.Sleep(TimeSpan.FromSeconds(m_delayInfoMoveSpeed));
+                }
+            });
+
+            showInfo.Start();
+        }
+
+        private void HideInfo()
+        {
+            Task hideInfo = new Task(() => {
+                var currentWidth = InfoGridWidth.Value;
+
+                while (currentWidth >= 0)
+                {
+                    QueueJobToDispatcher(() =>
+                    {
+                        InfoGridWidth = new GridLength(currentWidth, GridUnitType.Pixel);
+                    });
+
+                    currentWidth -= m_showInfoMoveSpeed;
+
+                    Thread.Sleep(TimeSpan.FromSeconds(m_delayInfoMoveSpeed));
+                }
+            });
+
+            hideInfo.Start();
+        }
+
+        private double GetValueFromPercent(double windowWidth, double percent)
+        {
+            return (windowWidth * percent) / 100;
         }
         #endregion
 

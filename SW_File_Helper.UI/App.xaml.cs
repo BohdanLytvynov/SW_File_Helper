@@ -70,6 +70,8 @@ namespace SW_File_Helper
             {
                 var vm = c.GetRequiredService<MainWindowViewModel>();
                 var mainWindow = new MainWindow();
+                Application.Current.MainWindow = mainWindow;
+
                 vm.WindowClosed += (sender, args) =>
                 {
                     mainWindow.Close();

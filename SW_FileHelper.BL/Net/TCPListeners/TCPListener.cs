@@ -51,13 +51,22 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
             if (instance == null)
             {
-                instance = new TcpListener(Endpoint);
-                SetInstance(instance);
+                try
+                {
+                    instance = new TcpListener(Endpoint);
+                    SetInstance(instance);
+                    Logger.Ok("Server initialized.");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"Error on initialization of the TcpListener! Error: {ex}");
+                }
+                
             }
 
             m_listenerTask = new Task(StartListening);
             m_cancellationTokenSource = new CancellationTokenSource();
-            Logger.Ok("Server initialized.");
+            
         }
 
         public void Start()
