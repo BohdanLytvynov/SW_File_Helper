@@ -1,4 +1,5 @@
-﻿using SW_File_Helper.BL.Net.MessageProcessors.Base;
+﻿using SW_File_Helper.BL.Loggers.Base;
+using SW_File_Helper.BL.Net.MessageProcessors.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
 using System.Net.Sockets;
 using System.Text;
@@ -11,12 +12,17 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors
         public IMessageProcessor MessageProcessor 
         { get => m_messageProcessor; set => m_messageProcessor = value; }
 
-        public MessageNetworkProcessor(IMessageProcessor messageProcessor) : this()
+        public MessageNetworkProcessor(IMessageProcessor messageProcessor, ILogger logger) : this()
         {
             if (messageProcessor == null)
                 throw new ArgumentNullException(nameof(messageProcessor));
 
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
+
             m_messageProcessor = messageProcessor;
+
+            Logger = logger;
         }
 
         public MessageNetworkProcessor() : base()
@@ -24,27 +30,41 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors
             
         }
 
-        public override void ProcessNetworkStream(NetworkStream networkStream)
+        public override void ProcessNetworkStream(NetworkStream networkStream, string clientIp)
         {
-            string dataRecieved = string.Empty;
-
-            byte[] recieveBuffer = new byte[BufferSize];
-
-            int bytesRead = networkStream.Read(recieveBuffer, 0, BufferSize);
-
-            if (bytesRead > 0)
+            try
             {
-                dataRecieved = UTF8Encoding.UTF8.GetString(recieveBuffer);
+                Logger.Info("Starting NetworkStream processing...");
+
+                string dataRecieved = string.Empty;
+
+                byte[] recieveBuffer = new byte[BufferSize];
+
+                Logger.Info($"Recieve Buffer allocated, size: {BufferSize}");
+
+                int bytesRead = networkStream.Read(recieveBuffer, 0, BufferSize);
+
+                Logger.Ok($"{bytesRead} Bytes was read from the NetworkStream.");
+
+                if (bytesRead > 0)
+                {
+                    dataRecieved = UTF8Encoding.UTF8.GetString(recieveBuffer);
+                }
+                else
+                {
+                    Logger.Error("Unable to read Data from the NetworkStream!");
+                }
+
+                if (string.IsNullOrEmpty(dataRecieved))
+                    Logger.Error("Unable to Cast read bytes To String");
+
+                MessageProcessor.ProcessMessage(dataRecieved, clientIp);
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Unable to read Data!");
+                Logger.Error($"Error during Network Stream Processing occured! Error: {ex}");
+                throw;
             }
-
-            if (string.IsNullOrEmpty(dataRecieved))
-                throw new Exception("Unable to Cast Data To String");
-
-            MessageProcessor.ProcessMessage(dataRecieved);
         }
     }
 }

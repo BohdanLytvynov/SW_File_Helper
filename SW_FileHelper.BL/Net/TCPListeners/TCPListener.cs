@@ -1,7 +1,6 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
@@ -25,14 +24,29 @@ namespace SW_File_Helper.BL.Net.TCPListeners
         public override void Dispose()
         {
             var instance = GetInstance();
-            if (instance != null)
+
+            if (instance == null)
             {
+                Logger.Error($"Instance wasn't initialized!");
+            }
+
+            try
+            {
+                Logger.Info("Releasing server resources...");
+                instance = GetInstance();
                 instance.Dispose();
+                instance = null;
+                Logger.Ok("Server resources released...");
+            }
+            catch (Exception ex)
+            {
+                Logger.Info($"Error on releasing server resources! Error: {ex}");
             }
         }
 
         public override void Init()
         {
+            Logger.Info("Initializing Server...");
             var instance = GetInstance();
 
             if (instance == null)
@@ -43,6 +57,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
             m_listenerTask = new Task(StartListening);
             m_cancellationTokenSource = new CancellationTokenSource();
+            Logger.Ok("Server initialized.");
         }
 
         public void Start()
@@ -55,7 +70,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
                 instance.Start();
 
-                Logger.Info($"Server started... \nServer listening to {Endpoint.Address.ToString()} ...");
+                Logger.Ok($"Server started... \nServer listening to {Endpoint.Address.ToString()}:{Endpoint.Port}");
 
                 m_listenerTask.Start();
             }
@@ -71,19 +86,8 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
             if(m_cancellationTokenSource != null)
                 m_cancellationTokenSource.Cancel();
-            try
-            {
-                Logger.Info("Releasing server resources...");
-                var instance = GetInstance();
-                instance.Dispose();
-                instance = null;
-                Logger.Info("Server resources released...");
-            }
-            catch (Exception ex)
-            {
-                Logger.Info($"Error on releasing server resources! Error: {ex}");
-            }
             
+            Dispose();
         }
 
         private void StartListening()
@@ -102,7 +106,9 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
                     if (sender == null) continue;
 
-                    Logger.Info($"Connection established with: {(sender.Client.RemoteEndPoint as IPEndPoint).Address}");
+                    var senderIP = (sender.Client.RemoteEndPoint as IPEndPoint).Address;
+
+                    Logger.Info($"Connection established with: {senderIP}");
 
                     netStream = sender.GetStream();
 
@@ -114,7 +120,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
                     Logger.Info($"NetworkStream with {netStream.Length} recieved...");
 
-                    NetworkStreamProcessor.ProcessNetworkStream(netStream);
+                    NetworkStreamProcessor.ProcessNetworkStream(netStream, senderIP.Address.ToString());
                 }
             }
             catch (Exception ex)
@@ -126,7 +132,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                 Logger.Info("Releasing client sender resources...");
                 sender?.Close();
                 sender = null;
-                Logger.Info("Resources released...");
+                Logger.Info("Client sender resources released...");
             }
         }
     }

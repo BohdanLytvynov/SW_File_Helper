@@ -1,13 +1,13 @@
 ﻿using SW_File_Helper.BL.Helpers;
-using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.TCPMessageListener;
 using SW_File_Helper.DAL.Models.TCPModels;
 using SW_File_Helper.Loggers;
 using SW_File_Helper.ViewModels.Base.VM;
 using System.Collections.ObjectModel;
 using System.Net;
-using System.Windows.Documents;
+using System.Windows;
 using System.Windows.Input;
+using SW_File_Helper.ViewModels.Models.Logs.Base;
 using UICommand = SW_File_Helper.ViewModels.Base.Commands.Command;
 
 namespace SW_File_Helper_Server.ViewModels
@@ -23,13 +23,13 @@ namespace SW_File_Helper_Server.ViewModels
         private int m_SelectedIPIndex;
         private bool m_StartStop; //Start = false Stop = true;
         private string m_StartButtonContent;
+        private LogViewModel m_message;
 
         private IConsoleLogger m_ConsoleLogger;
+        private ResourceDictionary m_CommonResources;
         #region Servers
 
         private ITCPMessageListener m_MessageListener;
-
-        private List<Paragraph> m_paragraph;
 
         #endregion
 
@@ -94,8 +94,11 @@ namespace SW_File_Helper_Server.ViewModels
         public string StartButtonContent 
         { get => m_StartButtonContent; set => Set(ref m_StartButtonContent, value); }
 
-        public List<Paragraph> Paragraph
-        { get => m_paragraph; set=>Set(ref m_paragraph, value); }
+        public LogViewModel Message 
+        {
+            get=> m_message;
+            set=> Set(ref m_message, value);
+        }
         #endregion
 
         #region Ctor
@@ -116,13 +119,15 @@ namespace SW_File_Helper_Server.ViewModels
 
         private void M_ConsoleLogger_OnLogProcessed(object arg1, string arg2, SW_File_Helper.BL.Loggers.Enums.LogType arg3)
         {
-            
+            Message = (LogViewModel)arg1 ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
         public MainWindowViewModel()
         {
             #region Init Fields
-            m_paragraph = new List<Paragraph>();
+            m_CommonResources = new ResourceDictionary();
+            m_CommonResources.Source = new Uri("/SW_File_Helper;component/Resources/ViewsCommon.xaml", UriKind.RelativeOrAbsolute);
+            m_message = new LogViewModel("Console loaded...", m_CommonResources["consoleMsg"] as Style);
             m_StartStop = false;
             m_StartButtonContent = String.Empty;
             m_MessageServerPortString = String.Empty;
@@ -198,12 +203,16 @@ namespace SW_File_Helper_Server.ViewModels
             m_MessageListener.Stop();
         }
 
-        public void OnMessageRecieved(Message message)
+        public void OnMessageRecieved(Message message, string clientIp)
         {
-            
+            var msgStyle = m_CommonResources["consoleMsg"] as Style;
+            var clientIpStyle = m_CommonResources["ClietIPStyle"] as Style;
+
+            Message = new ConsoleMessageViewModel(clientIp,
+                clientIpStyle, message.Text, msgStyle);
         }
 
-        public void OnFileRecieved(Message message)
+        public void OnFileRecieved(Message message, string clientIp)
         {
             var file = (ProcessFilesCommand)message;
         }

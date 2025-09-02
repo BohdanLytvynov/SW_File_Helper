@@ -1,5 +1,10 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
+using SW_File_Helper.BL.LogProcessors.Base;
+using SW_File_Helper.LogProcessors.DebugLogProcessor;
+using SW_File_Helper.LogProcessors.ErrorLogProcessor;
 using SW_File_Helper.LogProcessors.InfoLogProcessor;
+using SW_File_Helper.LogProcessors.OkLogProcessor;
+using SW_File_Helper.LogProcessors.WarningLogProcessor;
 using System.Windows.Documents;
 
 namespace SW_File_Helper.Loggers
@@ -9,6 +14,10 @@ namespace SW_File_Helper.Loggers
         public ConsoleLogger() : base()
         {
             base.LogProcessors.Add(new InfoLogProcessor());
+            base.LogProcessors.Add(new DebugLogProcessor());
+            base.LogProcessors.Add(new WarningLogProcessor());
+            base.LogProcessors.Add(new ErrorLogProcessor());
+            base.LogProcessors.Add(new OkLogProcessor());
         }
     }
 }

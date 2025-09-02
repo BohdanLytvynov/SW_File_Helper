@@ -34,6 +34,11 @@ namespace SW_File_Helper.BL.Loggers.Base
             Process(message, LogType.Warning);
         }
 
+        public void Ok(string message)
+        {
+            Process(message, LogType.Ok);
+        }
+
         protected void Process(string message, LogType logType)
         {
             object? result = null;

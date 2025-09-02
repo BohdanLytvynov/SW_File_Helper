@@ -26,7 +26,7 @@ namespace SW_File_Helper.BL.Net.Base
         #region Ctor
         protected TCPBase(ILogger logger)
         {
-            if (logger != null)
+            if (logger == null)
                 throw new ArgumentNullException(nameof(logger));
 
             Logger = logger;

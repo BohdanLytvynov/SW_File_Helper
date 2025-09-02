@@ -11,6 +11,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/SW_File_Helper;component/Resources/ViewsCommon.xaml"/>
                 <ResourceDictionary Source="/SW_File_Helper;component/Resources/ViewsPropriate.xaml"/>
+                <ResourceDictionary Source="/SW_File_Helper;component/Resources/LoggerStyles.xaml"/>
+                <ResourceDictionary Source="/SW_File_Helper;component/Resources/LoggerDataTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
 

@@ -12,17 +12,17 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor
             
         }
 
-        protected override void ProcessInternal(JObject obj, string msg)
+        protected override void ProcessInternal(JObject obj, string msg, string clientIp)
         {
             var type = GetMessageType(obj);
 
             switch (type)
             {
                 case MessageType.Message:
-                        OnProcessed?.Invoke(new Message() { Text = obj["Text"].ToString() });
+                        OnProcessed?.Invoke(new Message() { Text = obj["Text"].ToString() }, clientIp);
                         return;
                 default:
-                    CallNextProcessor(msg);
+                    CallNextProcessor(msg, clientIp);
                     break;
             }
         }

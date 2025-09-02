@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace SW_File_Helper.Controls
 {
@@ -11,50 +10,41 @@ namespace SW_File_Helper.Controls
     {
         #region Properties DP
 
-        public Paragraph Paragraph
+        public object MessageToWrite
         {
-            get { return (Paragraph)GetValue(ParagraphProperty); }
-            set { SetValue(ParagraphProperty, value); }
+            get { return (object)GetValue(MessageToWriteProperty); }
+            set { SetValue(MessageToWriteProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Paragraph.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ParagraphProperty;
-
-        private static void WriteToConsole(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var This = (Console)d;
-            var paragraph = (Paragraph)e.NewValue;
-            if(paragraph != null)
-                This.ConsoleWindow.Document.Blocks.Add(paragraph);
-        }
+        // Using a DependencyProperty as the backing store for MessageToWrite.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MessageToWriteProperty =
+            DependencyProperty.Register("MessageToWrite", typeof(object), 
+                typeof(Console), 
+                new PropertyMetadata(null, OnMessageToWriteCalled));
 
         #endregion
 
         #region Ctor
 
-        static Console()
-        {
-            ParagraphProperty =
-            DependencyProperty.Register("Paragraph", typeof(Paragraph), 
-            typeof(Console), 
-            new PropertyMetadata(null, WriteToConsole));
-        }
-
         public Console()
         {
             InitializeComponent();
-            this.ConsoleWindow.Document = new FlowDocument();
         }
 
         #endregion
 
         #region Methods
-
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        private static void OnMessageToWriteCalled(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            this.ConsoleWindow.Document.Blocks.Clear();
+            var This = (Console)d;
+            This.ConsoleWindow.Items.Add(e.NewValue);
         }
 
         #endregion
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.ConsoleWindow.Items.Clear();
+        }
     }
 }

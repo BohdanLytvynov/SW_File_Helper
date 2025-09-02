@@ -21,6 +21,20 @@
 
     <!--#region Styles -->
 
+    <Style x:Key="ClientIPStyle">
+        <Style.Setters>
+            <Setter Property="ItemsControl.Foreground" Value="Orange"/>
+            <Setter Property="ItemsControl.FontSize" Value="16"/>
+        </Style.Setters>
+    </Style>
+
+    <Style x:Key="consoleMsg">
+        <Style.Setters>
+            <Setter Property="ItemsControl.Foreground" Value="White"/>
+            <Setter Property="ItemsControl.FontSize" Value="14"/>
+        </Style.Setters>
+    </Style>
+
     <Style x:Key="UnselectableListView" TargetType="ListViewItem">
         <Style.Setters>
             <Setter Property="Focusable" Value="False"/>

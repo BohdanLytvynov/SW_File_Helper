@@ -8,6 +8,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/SW_File_Helper;component/Resources/ViewsCommon.xaml"/>
                 <ResourceDictionary Source="/SW_File_Helper_Server;component/Resources/ViewsPropriate.xaml"/>
+                <ResourceDictionary Source="/SW_File_Helper;component/Resources/LoggerDataTemplates.xaml"/>
+                <ResourceDictionary Source="/SW_File_Helper;component/Resources/LoggerStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

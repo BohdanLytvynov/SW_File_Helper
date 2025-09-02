@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using SW_File_Helper.BL.Loggers.Base;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
 {
@@ -11,6 +7,8 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
     {
         public int BufferSize { get; set; }
 
-        void ProcessNetworkStream(NetworkStream networkStream);
+        public ILogger Logger { get; set; }
+
+        void ProcessNetworkStream(NetworkStream networkStream, string clientIp);
     }
 }

@@ -13,7 +13,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors
             
         }
 
-        protected override void ProcessInternal(JObject obj, string msg)
+        protected override void ProcessInternal(JObject obj, string msg, string clientIp)
         {
             var type = GetMessageType(obj);
 
@@ -37,15 +37,15 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors
                             Text = command,
                             Src = obj["Src"].ToString(),
                             Dest = files,
-                        });
+                        }, clientIp);
                     }
                     else
                     {
-                        CallNextProcessor(msg);
+                        CallNextProcessor(msg, clientIp);
                     }
                     break;
                 default:
-                    CallNextProcessor(msg);
+                    CallNextProcessor(msg, clientIp);
                     break;
             }
         }

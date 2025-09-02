@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <Style x:Key="ConsoleWindowStyle" TargetType="RichTextBox">
+        <Style x:Key="ConsoleWindowStyle" TargetType="ListView">
             <Style.Setters>
                 <Setter Property="Background" Value="Black"/>
                 <Setter Property="Foreground" Value="White"/>
@@ -21,7 +21,7 @@
             <RowDefinition/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <RichTextBox x:Name="ConsoleWindow" 
+        <ListView x:Name="ConsoleWindow" 
                      Style="{StaticResource ConsoleWindowStyle}"/>
         <Grid Grid.Row="1" Background="Gray">
             <Grid.ColumnDefinitions>

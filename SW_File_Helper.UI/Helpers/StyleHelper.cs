@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace SW_File_Helper.Helpers
 {
-    internal static class StyleHelper
+    public static class StyleHelper
     {
         public static Style BuildStyle(string prop, object value)
         { 

@@ -9,7 +9,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.Base
         public string CommandText { get; }
 
         public IMessageProcessor? Next {get; set;}
-        public Action<Message> OnProcessed { get; set; }
+        public Action<Message, string> OnProcessed { get; set; }
 
         protected MessageProcessorBase()
         {
@@ -22,21 +22,21 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.Base
                 Next = commandProcessor;
         }
 
-        public void ProcessMessage(string msg)
+        public void ProcessMessage(string msg, string clientIP)
         {
             JObject obj = JObject.Parse(msg);
             if (obj == null)
                 throw new Exception("Unable to convert to JObject!");
 
-            ProcessInternal(obj, msg);
+            ProcessInternal(obj, msg, clientIP);
         }
 
-        protected abstract void ProcessInternal(JObject obj,  string msg);
+        protected abstract void ProcessInternal(JObject obj,  string msg, string clientIp);
 
-        protected void CallNextProcessor(string msg)
+        protected void CallNextProcessor(string msg, string clientIp)
         {
             if (Next != null)
-                Next.ProcessMessage(msg);
+                Next.ProcessMessage(msg, clientIp);
             else
             {
                 throw new Exception($"There is now message processor!");

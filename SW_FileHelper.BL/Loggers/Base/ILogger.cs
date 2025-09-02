@@ -11,5 +11,6 @@ namespace SW_File_Helper.BL.Loggers.Base
         void Warn(string message);
         void Error(string message);
         void Debug(string message);
+        void Ok(string message);
     }
 }

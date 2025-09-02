@@ -22,16 +22,27 @@ namespace SW_File_Helper.BL.Net.TCPClients
 
         public override void Dispose()
         {
+            this.Logger.Info("Releasing Client resources...");
+
             var instance = GetInstance();
             if (instance != null)
             {
-                instance.Close();
+                try
+                {
+                    instance.Close();
+
+                    this.Logger.Ok("Client Resources released.");
+                }
+                catch (Exception ex)
+                {
+                    this.Logger.Error($"Error while releasing Client Resources! Error: {ex}");
+                }
             }
         }
 
         public override void Init()
         {
-            Logger.Info("Client Initizlization started...");
+            Logger.Info("Client Initialization started...");
 
             var instance = GetInstance();
 
@@ -75,7 +86,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
 
                 networkStream.Write(bytesToSend, 0, bytesToSend.Length);
 
-                Logger.Info("Message was send successfuly.");
+                Logger.Ok("Message was send successfuly.");
             }
             catch (Exception ex)
             {
@@ -102,7 +113,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
 
                 await networkStream.WriteAsync(bytesToSend, 0, bytesToSend.Length);
 
-                Logger.Info("Message was send successfuly.");
+                Logger.Ok("Message was send successfuly.");
             }
             catch (Exception ex)
             {
