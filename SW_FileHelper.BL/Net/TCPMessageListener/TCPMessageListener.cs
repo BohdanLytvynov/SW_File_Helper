@@ -6,7 +6,8 @@ namespace SW_File_Helper.BL.Net.TCPMessageListener
 {
     public sealed class TCPMessageListener : TCPListener<IMessageNetworkProcessor>, ITCPMessageListener
     {
-        public TCPMessageListener(ILogger logger) : base(logger)
+        public TCPMessageListener(ILogger logger, IMessageNetworkProcessor messageNetworkProcessor) 
+            : base(logger, messageNetworkProcessor)
         {
             
         }

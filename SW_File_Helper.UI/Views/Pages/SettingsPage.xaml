@@ -129,18 +129,29 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                                 <TextBlock Style="{StaticResource TextBlockInputStyle}"
-               Text="Client Status:"/>
+                      Text="Client Status:" Margin="0,0,0,0"/>
                                 <TextBlock Text="{Binding ClientControlButtonContent, 
-                                    UpdateSourceTrigger=PropertyChanged}" 
+                                                 UpdateSourceTrigger=PropertyChanged}" 
                                            Style="{StaticResource TextBlockInputStyle}">
                                 </TextBlock>
                             </StackPanel>
+                            <Grid Height="40" Margin="0,20,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button Content="{Binding StartClientButtonContent, 
+                                    UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                        Style="{StaticResource Button}" Grid.Column="1"
+                                        Command="{Binding OnStartClientButtonPressed}"/>
+                            </Grid>
                         </StackPanel>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
         </Grid>
-        
+
     </Grid>
 </Page>

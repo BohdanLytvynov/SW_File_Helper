@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Settings;
@@ -65,14 +66,13 @@ namespace SW_File_Helper.ViewModels.Views
 
         private IConsoleLogger m_consoleLogger;
 
-        private GridLength m_infoGridWidth;
-
         private LogViewModel m_LogMessage;
+
         private ResourceDictionary m_commonResourceDictionary;
 
-        private const double m_showInfoDoublePercentage = 50;
-        private const double m_showInfoMoveSpeed = 2;
-        private const float m_delayInfoMoveSpeed = 20;
+        private ITCPClient m_tcpMessageClient;
+
+        private ITCPClient m_tcpFileClient;
         #endregion
 
         #region Properties
@@ -92,11 +92,9 @@ namespace SW_File_Helper.ViewModels.Views
         { get => m_OnAddToFavoritesFired; set => Set(ref m_OnAddToFavoritesFired, value); }
         public bool ManualDraw
         { get => m_ManualDraw; set => Set(ref m_ManualDraw, value); }
-
-        public GridLength InfoGridWidth
-        { get => m_infoGridWidth; set => Set(ref m_infoGridWidth, value); }
         public LogViewModel LogMessage
         { get=> m_LogMessage; set => Set(ref m_LogMessage, value); }
+
         #endregion
 
         #region Commands
@@ -140,6 +138,10 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
+
+            m_tcpMessageClient = new TCPClient(m_consoleLogger, "Message Client");
+
+            m_tcpFileClient = new TCPClient(m_consoleLogger, "File Client");
         }
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
@@ -147,6 +149,20 @@ namespace SW_File_Helper.ViewModels.Views
             LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
+        public void OnStartClientButtonPressed()
+        {
+            ConfigureTCPClients();
+
+            InitTCPCLients();
+
+            CheckTCPConnections();
+        }
+
+        public void OnStopClientButtonPressed()
+        {
+            m_tcpMessageClient.Dispose();
+            m_tcpFileClient.Dispose();
+        }
         public MainWindowViewModel()
         {
             #region Field Initialization
@@ -154,7 +170,6 @@ namespace SW_File_Helper.ViewModels.Views
             m_commonResourceDictionary.Source = new Uri("/SW_File_Helper;component/Resources/ViewsCommon.xaml", UriKind.RelativeOrAbsolute);
 
             m_LogMessage = new LogViewModel("Console loaded...", m_commonResourceDictionary["consoleMsg"] as Style);
-            m_infoGridWidth = new GridLength(0, GridUnitType.Pixel);
             m_drawChildrenOnDelayValue = 0.2f;
             m_ManualDraw = false;
             m_files = new ObservableCollection<CustomListViewItem>();
@@ -199,6 +214,30 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region Methods
+
+        private void CheckTCPConnections()
+        {
+            m_tcpMessageClient.SendMessage("Testing Message Client Connection");
+            m_tcpFileClient.SendMessage("Testing File Client Connection");
+        }
+
+        private void ConfigureTCPClients()
+        {
+            var settings = m_settingsDataProvider.GetData();
+            var hostIP = settings.HostIPAddress;
+            var msgListenerPort = settings.MessageListenerPort;
+            var fileListenerPort = settings.FileListenerPort;
+
+            m_tcpMessageClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort);
+            m_tcpFileClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), fileListenerPort);
+        }
+
+        private void InitTCPCLients()
+        { 
+            m_tcpMessageClient.Init();
+            m_tcpFileClient.Init();
+        }
+
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
         {
             var files = m_favoritesRepository.GetAll(ids);
@@ -249,24 +288,14 @@ namespace SW_File_Helper.ViewModels.Views
             var msgListenerPort = settings.MessageListenerPort;
             var fileListenerPort = settings.FileListenerPort;
 
+            var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
+
             if (settings.EnableRemoteMode)
             {
-                ShowInfo();
-
-                using (TCPClient client = new TCPClient(m_consoleLogger)
-                { Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort) })
-                {
-                    client.Init();
-
-                    client.SendMessage("My test Message...");
-                }
-
-                HideInfo();
+                
             }
             else
             {
-                var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
-
                 List<FileModel> fileModels = new List<FileModel>();
 
                 foreach (var file in filesToProcess)
@@ -281,7 +310,6 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region On Quite Button Pressed
-
         private bool CanOnQuiteButtonPressedExecute(object p) => true;
 
         private void OnQuiteButtonPressedExecute(object p)
@@ -292,59 +320,6 @@ namespace SW_File_Helper.ViewModels.Views
         public void Draw()
         {
             ManualDraw = !ManualDraw;
-        }
-        #endregion
-
-        #region Info Grid Control System
-        private void ShowInfo()
-        {
-            //Get current window width
-            double windowWidth = Application.Current.MainWindow.ActualWidth;
-            var width = GetValueFromPercent(windowWidth, m_showInfoDoublePercentage);
-
-            Task showInfo = new Task(() => { 
-                var currentWidth = InfoGridWidth.Value;//Must be 0 during start
-
-                while (currentWidth <= width)
-                {
-                    QueueJobToDispatcher(() => 
-                    {
-                        InfoGridWidth = new GridLength(currentWidth, GridUnitType.Pixel);
-                    });
-
-                    currentWidth += m_showInfoMoveSpeed;
-
-                    Thread.Sleep(TimeSpan.FromSeconds(m_delayInfoMoveSpeed));
-                }
-            });
-
-            showInfo.Start();
-        }
-
-        private void HideInfo()
-        {
-            Task hideInfo = new Task(() => {
-                var currentWidth = InfoGridWidth.Value;
-
-                while (currentWidth >= 0)
-                {
-                    QueueJobToDispatcher(() =>
-                    {
-                        InfoGridWidth = new GridLength(currentWidth, GridUnitType.Pixel);
-                    });
-
-                    currentWidth -= m_showInfoMoveSpeed;
-
-                    Thread.Sleep(TimeSpan.FromSeconds(m_delayInfoMoveSpeed));
-                }
-            });
-
-            hideInfo.Start();
-        }
-
-        private double GetValueFromPercent(double windowWidth, double percent)
-        {
-            return (windowWidth * percent) / 100;
         }
         #endregion
 

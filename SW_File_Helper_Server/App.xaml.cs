@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor;
 using SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors;
 using SW_File_Helper.BL.Net.TCPMessageListener;
 using SW_File_Helper.Loggers;
@@ -33,34 +34,10 @@ namespace SW_File_Helper_Server
             var services = new ServiceCollection();
 
             #region Do Initial Setup Here
-            services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<ServiceWrapper>();
             services.AddSingleton<MainWindowViewModel>();
-            services.AddSingleton(c => {
-                var logger = c.GetRequiredService<IConsoleLogger>();
-                ITCPMessageListener tCPMessageListener = new TCPMessageListener(logger);
-                return tCPMessageListener;
-            });
-            services.AddSingleton(c =>
-            {
-                var vm = c.GetRequiredService<MainWindowViewModel>();
-
-                MessageProcessor messageProcessor = new MessageProcessor();
-                messageProcessor.OnProcessed = vm.OnMessageRecieved;
-
-                var processfileCommandProcessor = new ProcessFilesCommandProcessor();
-                processfileCommandProcessor.OnProcessed = vm.OnFileRecieved;
-
-                messageProcessor.AddMessageProcessor(processfileCommandProcessor);
-
-                var logger = c.GetRequiredService<IConsoleLogger>();
-
-                IMessageNetworkProcessor messageNetworkProcessor
-                = new MessageNetworkProcessor(messageProcessor, logger);
-
-                return messageNetworkProcessor;
-            });
-            services.AddSingleton(c =>
+            services.AddSingleton<IConsoleLogger, ConsoleLogger>();
+            services.AddSingleton<MainWindow>(c =>
             {
                 var vm = c.GetRequiredService<MainWindowViewModel>();
                 var mainWindow = new MainWindow();
@@ -70,7 +47,6 @@ namespace SW_File_Helper_Server
 
                 return mainWindow;
             });
-
 
             #endregion
 

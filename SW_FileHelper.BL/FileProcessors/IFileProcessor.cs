@@ -1,4 +1,5 @@
-﻿using SW_File_Helper.DAL.Models;
+﻿using SW_File_Helper.DAL.DataProviders.Settings;
+using SW_File_Helper.DAL.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

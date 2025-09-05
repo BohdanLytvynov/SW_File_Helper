@@ -6,7 +6,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.Base
 {
     public abstract class MessageProcessorBase : IMessageProcessor
     {
-        public string CommandText { get; }
+        public string CommandText { get; init; }
 
         public IMessageProcessor? Next {get; set;}
         public Action<Message, string> OnProcessed { get; set; }
@@ -14,6 +14,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.Base
         protected MessageProcessorBase()
         {
             Next = null;
+            CommandText = string.Empty;
         }
 
         public void AddMessageProcessor(IMessageProcessor commandProcessor)

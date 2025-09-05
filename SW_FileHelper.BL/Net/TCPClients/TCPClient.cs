@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json.Linq;
 using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.Base;
+using SW_File_Helper.DAL.Helpers;
+using SW_File_Helper.DAL.Models.TCPModels;
 using System.Net.Sockets;
 using System.Text;
 
@@ -10,11 +12,13 @@ namespace SW_File_Helper.BL.Net.TCPClients
     {
         #region Properties
         public int SendingBufferSize { get; set; }
+        public string ClientName { get; init; }
         #endregion
 
         #region Ctor
-        public TCPClient(ILogger logger) : base(logger)
+        public TCPClient(ILogger logger, string clientName = "My Client") : base(logger)
         {
+            ClientName = clientName;
         }
         #endregion
 
@@ -22,7 +26,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
 
         public override void Dispose()
         {
-            this.Logger.Info("Releasing Client resources...");
+            this.Logger.Info($"Releasing {ClientName} resources...");
 
             var instance = GetInstance();
             if (instance != null)
@@ -31,18 +35,20 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 {
                     instance.Close();
 
-                    this.Logger.Ok("Client Resources released.");
+                    SetInstance(null);
+
+                    this.Logger.Ok($"{ClientName} Resources released.");
                 }
                 catch (Exception ex)
                 {
-                    this.Logger.Error($"Error while releasing Client Resources! Error: {ex}");
+                    this.Logger.Error($"Error while releasing {ClientName} Resources! Error: {ex}");
                 }
             }
         }
 
         public override void Init()
         {
-            Logger.Info("Client Initialization started...");
+            Logger.Info($"{ClientName} Initialization started...");
 
             var instance = GetInstance();
 
@@ -50,13 +56,14 @@ namespace SW_File_Helper.BL.Net.TCPClients
             {
                 try
                 {
-                    instance = new TcpClient(Endpoint);
+                    instance = new TcpClient();
+                    instance.Connect(Endpoint);
                     SetInstance(instance);
-                    Logger.Ok("Client initialized successfuly.");
+                    Logger.Ok($"{ClientName} initialized successfuly.");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Error on initialization of the TcpClient! Error: {ex}");
+                    Logger.Error($"Error on initialization of the {ClientName}! Error: {ex}");
                 }                
             }
 
@@ -71,7 +78,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
             var tcpInstance = GetInstance();
             if (tcpInstance == null)
             {
-                throw new Exception("Tcp Instance wasn't initialized!");
+                throw new Exception($"Tcp Instance of the {ClientName} wasn't initialized!");
             }
         }
 
@@ -80,17 +87,21 @@ namespace SW_File_Helper.BL.Net.TCPClients
             var tcpInstance = GetInstance();
             if (tcpInstance == null)
             {
-                Logger.Error("Tcp instance wasn't initialized!");
+                Logger.Error($"Tcp instance of the {ClientName} wasn't initialized!");
             }
 
             try
             {
                 Logger.Info($"Sending message: {msg}");
 
-                var networkStream = tcpInstance.GetStream();
-                var bytesToSend = Encoding.UTF8.GetBytes(msg);
+                var message = new Message() { Text = msg };
 
-                Logger.Info($"Calculated amount of Bytes to send: {bytesToSend} Bytes");
+                var jsonStr = JsonHelper.SerializeWithNonFormatting(message);
+
+                var networkStream = tcpInstance.GetStream();
+                var bytesToSend = Encoding.UTF8.GetBytes(jsonStr);
+
+                Logger.Info($"Calculated amount of Bytes to send: {bytesToSend.Length} Bytes");
 
                 networkStream.Write(bytesToSend, 0, bytesToSend.Length);
 
@@ -107,7 +118,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
             var tcpInstance = GetInstance();
             if (tcpInstance == null)
             {
-                Logger.Error("Tcp instance wasn't initialized!");
+                Logger.Error($"Tcp instance of the {ClientName} wasn't initialized!");
             }
 
             try
@@ -117,7 +128,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 var networkStream = tcpInstance.GetStream();
                 var bytesToSend = Encoding.UTF8.GetBytes(msg);
 
-                Logger.Info($"Calculated amount of Bytes to send: {bytesToSend} Bytes");
+                Logger.Info($"Calculated amount of Bytes to send: {bytesToSend.Length} Bytes");
 
                 await networkStream.WriteAsync(bytesToSend, 0, bytesToSend.Length);
 

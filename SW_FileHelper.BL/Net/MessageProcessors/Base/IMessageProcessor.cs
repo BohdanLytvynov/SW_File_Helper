@@ -6,7 +6,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.Base
     {
         public Action<Message, string> OnProcessed { get; set; }
 
-        public string CommandText { get; }
+        public string CommandText { get; init; }
 
         public IMessageProcessor? Next { get; set; }
 

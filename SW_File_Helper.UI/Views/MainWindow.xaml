@@ -37,8 +37,9 @@
             <GridSplitter Grid.Column="1"
                           Style="{StaticResource GridSplitter_Vertical}"/>
             <Grid Grid.Column="2" x:Name="Settings">
-                <Frame Grid.Row="0" Content="{Binding SettingsPage, UpdateSourceTrigger=PropertyChanged}" NavigationUIVisibility="Hidden">
-                </Frame>
+                <Frame Grid.Row="0" 
+                       Content="{Binding SettingsPage, UpdateSourceTrigger=PropertyChanged}" 
+                       NavigationUIVisibility="Hidden"/>
             </Grid>
         </Grid>
 
@@ -58,14 +59,14 @@
                     Command="{Binding OnQuiteButtonPressed}"
                     />
         </Grid>
-        <Grid x:Name="InformationGrid">
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="{Binding InfoGridWidth, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                <ColumnDefinition Width="349*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="40*"/>
+                <ColumnDefinition Width="498*"/>
             </Grid.ColumnDefinitions>
-            <controls:Console MessageToWrite="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
             <GridSplitter Grid.Column="1" Style="{StaticResource GridSplitter_Vertical}"/>
+            <controls:Console MessageToWrite="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
         </Grid>
     </Grid>
 </Window>

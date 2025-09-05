@@ -1,16 +1,9 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.Base
 {
-    public abstract class TCPBase<TCPInstance> : ITCPBase<TCPInstance>, IDisposable
+    public abstract class TCPBase<TCPInstance> : ITCPBase<TCPInstance>
         where TCPInstance : IDisposable
     {
         #region Fields

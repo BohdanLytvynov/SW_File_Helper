@@ -10,7 +10,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors
     {
         public ProcessFilesCommandProcessor() : base()
         {
-            
+            CommandText = Constants.PROCESS_FILES_COMMAND;
         }
 
         protected override void ProcessInternal(JObject obj, string msg, string clientIp)
@@ -22,7 +22,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors
                 case MessageType.Command:
                     var command = obj["Text"].ToString();
 
-                    if (command.Equals(Constants.PROCESS_FILES_COMMAND))
+                    if (command.Equals(CommandText))
                     {
                         var dest = JArray.Parse(obj["Dest"].ToString());
                         List<string> files = new List<string>();

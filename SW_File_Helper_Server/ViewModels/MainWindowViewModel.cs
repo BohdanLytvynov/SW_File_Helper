@@ -9,6 +9,15 @@ using System.Windows;
 using System.Windows.Input;
 using SW_File_Helper.ViewModels.Models.Logs.Base;
 using UICommand = SW_File_Helper.ViewModels.Base.Commands.Command;
+using SW_File_Helper.BL.Net.MessageProcessors.Base;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors;
+using SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor;
+using SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors;
+using SW_File_Helper.ServiceWrappers;
+using Microsoft.Extensions.DependencyInjection;
+using System.CodeDom;
+using SW_File_Helper.BL.Net.TCPFileListener;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.FileProcessors;
 
 namespace SW_File_Helper_Server.ViewModels
 {
@@ -29,7 +38,10 @@ namespace SW_File_Helper_Server.ViewModels
         private ResourceDictionary m_CommonResources;
         #region Servers
 
+        private IMessageNetworkProcessor m_messageNetworkProcessor;
+        private IFileNetworkProcessor m_fileNetworkProcessor;
         private ITCPMessageListener m_MessageListener;
+        private ITCPFileListener m_FileListener;
 
         #endregion
 
@@ -102,29 +114,20 @@ namespace SW_File_Helper_Server.ViewModels
         #endregion
 
         #region Ctor
-        public MainWindowViewModel(ITCPMessageListener tCPMessageListener, IConsoleLogger consoleLogger) : this()
-        {
-            if(tCPMessageListener == null)
-                throw new ArgumentNullException(nameof(tCPMessageListener));
-
-            if(consoleLogger == null)
-                throw new ArgumentNullException(nameof(consoleLogger));
-
-            m_MessageListener = tCPMessageListener;
-
-            m_ConsoleLogger = consoleLogger;
-
-            m_ConsoleLogger.OnLogProcessed += M_ConsoleLogger_OnLogProcessed;
-        }
-
+        
         private void M_ConsoleLogger_OnLogProcessed(object arg1, string arg2, SW_File_Helper.BL.Loggers.Enums.LogType arg3)
         {
             Message = (LogViewModel)arg1 ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(ServiceWrapper serviceWrapper)
         {
             #region Init Fields
+            m_ConsoleLogger = serviceWrapper.GetRequiredService<IConsoleLogger>();
+
+            if(m_ConsoleLogger == null)
+                throw new ArgumentNullException(nameof(m_ConsoleLogger));
+
             m_CommonResources = new ResourceDictionary();
             m_CommonResources.Source = new Uri("/SW_File_Helper;component/Resources/ViewsCommon.xaml", UriKind.RelativeOrAbsolute);
             m_message = new LogViewModel("Console loaded...", m_CommonResources["consoleMsg"] as Style);
@@ -143,6 +146,15 @@ namespace SW_File_Helper_Server.ViewModels
                 m_IPAddresses.Add(iPAddress.ToString());
             }
             CalculateStartButtonContent();
+            #endregion
+
+            #region Allocate Server
+
+            ConfigureNetworkProcessors();
+
+            m_MessageListener = new TCPMessageListener(m_ConsoleLogger, m_messageNetworkProcessor);
+            m_FileListener = new ITCPFileListener(m_ConsoleLogger, );
+
             #endregion
 
             #region Init Commands
@@ -189,7 +201,7 @@ namespace SW_File_Helper_Server.ViewModels
 
         private void StartServers()
         {
-            m_MessageListener.Endpoint 
+            m_MessageListener.Endpoint
                 = new IPEndPoint(
                     IPAddress.Parse(IPAddresses[SelectedIPIndex]),
                     int.Parse(MessageServerPortString));
@@ -215,6 +227,21 @@ namespace SW_File_Helper_Server.ViewModels
         public void OnFileRecieved(Message message, string clientIp)
         {
             var file = (ProcessFilesCommand)message;
+        }
+
+        private void ConfigureNetworkProcessors()
+        {
+            MessageProcessor messageProcessor = new MessageProcessor();
+            messageProcessor.OnProcessed += OnMessageRecieved;
+
+            var processfileCommandProcessor = new ProcessFilesCommandProcessor();
+            processfileCommandProcessor.OnProcessed += OnFileRecieved;
+
+            messageProcessor.AddMessageProcessor(processfileCommandProcessor);
+
+            m_messageNetworkProcessor = new MessageNetworkProcessor(messageProcessor, m_ConsoleLogger);
+
+            m_ConsoleLogger.OnLogProcessed += M_ConsoleLogger_OnLogProcessed;
         }
         #endregion
     }

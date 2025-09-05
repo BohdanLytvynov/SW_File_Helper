@@ -32,23 +32,25 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors
 
         public override void ProcessNetworkStream(NetworkStream networkStream, string clientIp)
         {
+            string dataRecieved = string.Empty;
+
+            byte[] recieveBuffer = new byte[BufferSize];
+
+            int bytesRead = 0;
+
             try
             {
                 Logger.Info("Starting NetworkStream processing...");
-
-                string dataRecieved = string.Empty;
-
-                byte[] recieveBuffer = new byte[BufferSize];
-
+                
                 Logger.Info($"Recieve Buffer allocated, size: {BufferSize}");
 
-                int bytesRead = networkStream.Read(recieveBuffer, 0, BufferSize);
-
-                Logger.Ok($"{bytesRead} Bytes was read from the NetworkStream.");
+                bytesRead = networkStream.Read(recieveBuffer, 0, BufferSize);
 
                 if (bytesRead > 0)
                 {
                     dataRecieved = UTF8Encoding.UTF8.GetString(recieveBuffer);
+
+                    Logger.Ok($"{bytesRead} Bytes was read from the NetworkStream.");
                 }
                 else
                 {

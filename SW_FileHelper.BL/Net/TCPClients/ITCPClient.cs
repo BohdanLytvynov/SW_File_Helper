@@ -10,6 +10,8 @@ namespace SW_File_Helper.BL.Net.TCPClients
 {
     public interface ITCPClient : ITCPBase<TcpClient>
     {
+        public string ClientName { get; init; }
+
         public int SendingBufferSize { get; set; }
 
         Task SendMessageAsync(string msg);

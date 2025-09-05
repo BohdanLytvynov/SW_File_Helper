@@ -1,18 +1,22 @@
 ﻿using SW_File_Helper.BL.Helpers;
-using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
 using SW_File_Helper.DAL.Repositories.Favorites;
 using SW_File_Helper.ViewModels.Base.Commands;
 using SW_File_Helper.ViewModels.Base.VM;
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Windows.Input;
 
 namespace SW_File_Helper.ViewModels.Views.Pages
 {
     public class SettingsPageViewModel : ValidatableViewModel
     {
+        #region Events
+        public event Action OnStartClients;
+
+        public event Action OnStopClients;
+        #endregion
+
         #region Fields
         private string m_fileExtensionForReplace;
 
@@ -36,6 +40,9 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         private IFavoritesRepository m_favoritesRepository;
 
+        private string m_StartClientButtonContent;
+
+        private bool m_ClientsStarted;
         #endregion
 
         #region Properties
@@ -84,6 +91,10 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 ShowPopup = false;
             }
         }
+        public string StartClientButtonContent
+        { get => m_StartClientButtonContent; set => Set(ref m_StartClientButtonContent, value); }
+        public bool ClientsStarted
+        { get => m_ClientsStarted; set => Set(ref m_ClientsStarted, value); }
 
         #endregion
 
@@ -98,42 +109,19 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 switch (columnName)
                 {
                     case nameof(FileExtensionForReplace):
-                        isValid = !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error);
-                        SetValidArrayValue(0, isValid);
-                        if (isValid)
-                        { 
-                            m_dataProvider.GetData().FileExtensionForReplace = FileExtensionForReplace;
-                            m_dataProvider.SaveData();
-                        }
+                        SetValidArrayValue(0, !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error));
                         break;
                     case nameof(HostIPAddress):
-                        isValid = ValidationHelpers.IsIPAddressValid(HostIPAddress, out error);
-                        SetValidArrayValue(1, isValid);
-                        if (isValid)
-                        { 
-                            m_dataProvider.GetData().HostIPAddress = HostIPAddress;
-                            m_dataProvider.SaveData();
-                        }
+                        SetValidArrayValue(1, ValidationHelpers.IsIPAddressValid(HostIPAddress, out error));
                         break;
                     case nameof(MessageListenerPortString):
-                        isValid = ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error);
-                        SetValidArrayValue(2, isValid);
-                        if (isValid)
-                        { 
-                            m_dataProvider.GetData().MessageListenerPort = int.Parse(MessageListenerPortString);
-                            m_dataProvider.SaveData();
-                        }
+                        SetValidArrayValue(2, ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error));
                         break;
                     case nameof(FileListenerPortString):
-                        isValid = ValidationHelpers.IsIntegerNumberValid(FileListenerPortString, out error);
-                        SetValidArrayValue(3, isValid);
-                        if (isValid)
-                        { 
-                            m_dataProvider.GetData().FileListenerPort = int.Parse(FileListenerPortString);
-                            m_dataProvider.SaveData();
-                        }
+                        SetValidArrayValue(3, ValidationHelpers.IsIntegerNumberValid(FileListenerPortString, out error));
                         break;
                 }
+
                 return error;
             }
         }
@@ -141,6 +129,8 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         #region Commands
         public ICommand OnAddToFavoritesIPButtonPressed { get; }
+
+        public ICommand OnStartClientButtonPressed { get; }
         #endregion
 
         #region Ctor
@@ -170,6 +160,10 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
             m_SelectedIPAddress = string.Empty;
 
+            m_StartClientButtonContent = "Start Client";
+
+            m_ClientsStarted = false;
+
             InitValidArray(4);
 
             #endregion
@@ -181,11 +175,39 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 CanOnAddIPAddressToFavoritesButtonPressedExecute
                 );
 
+            OnStartClientButtonPressed = new Command(
+                OnStartServerButtonPressedExecute,
+                CanOnStartServerButtonPressedExecute
+                );
+
             #endregion
         }
         #endregion
 
         #region Methods
+
+        #region On Start Client Button Pressed
+
+        private bool CanOnStartServerButtonPressedExecute(object p) => 
+            ValidateFields(1, GetLastIndexOfValidArray()) && RemoteModeEnabled;
+
+        private void OnStartServerButtonPressedExecute(object p)
+        {
+            ClientsStarted = !ClientsStarted;
+
+            if (ClientsStarted)
+            {
+                OnStartClients?.Invoke();
+                StartClientButtonContent = "Stop Client";
+            }
+            else
+            {
+                OnStopClients?.Invoke();
+                StartClientButtonContent = "Start Client";
+            }
+        }
+
+        #endregion
 
         #region On Add IPAddress To Favorites Pressed
 

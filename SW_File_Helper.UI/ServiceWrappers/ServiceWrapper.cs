@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,16 @@ namespace SW_File_Helper.ServiceWrappers
             if(serviceProvider == null)
                 throw new ArgumentNullException(nameof(serviceProvider));
             Services = serviceProvider;
+        }
+
+        public T? GetRequiredService<T>()
+        { 
+            return Services.GetRequiredService<T>();
+        }
+
+        public T? GetService<T>()
+        {
+            return Services.GetService<T>();
         }
     }
 

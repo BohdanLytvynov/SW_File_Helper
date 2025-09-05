@@ -9,7 +9,7 @@ namespace SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor
     {
         public MessageProcessor() : base()
         {
-            
+            CommandText = string.Empty;
         }
 
         protected override void ProcessInternal(JObject obj, string msg, string clientIp)

@@ -6,7 +6,7 @@ namespace SW_File_Helper.BL.Net.TCPFileListener
 {
     public sealed class TCPFileListener : TCPListener<IFileNetworkProcessor>, ITCPFileListener
     {
-        public TCPFileListener(ILogger logger) : base(logger)
+        public TCPFileListener(ILogger logger, IFileNetworkProcessor fileNetworkProcessor) : base(logger, fileNetworkProcessor)
         {
         }
     }

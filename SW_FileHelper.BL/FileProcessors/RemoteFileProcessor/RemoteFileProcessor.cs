@@ -1,24 +1,26 @@
-﻿using SW_File_Helper.DAL.DataProviders.Settings;
+﻿using SW_File_Helper.BL.Net.TCPClients;
+using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Helpers;
 using SW_File_Helper.DAL.Models;
 
-namespace SW_File_Helper.BL.FileProcessors
+namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 {
-    public class FileProcessor : IFileProcessor
+    public class RemoteFileProcessor : FileProcessor, IRemoteFileProcessor
     {
-        protected ISettingsDataProvider m_settingsDataProvider;
-
-        public FileProcessor(ISettingsDataProvider settingsDataProvider)
+        public RemoteFileProcessor(ISettingsDataProvider settingsDataProvider, ITCPClient tCPClient) 
+            : base(settingsDataProvider)
         {
-            m_settingsDataProvider = settingsDataProvider ?? throw new ArgumentNullException(nameof(settingsDataProvider));
+            TCPClient = tCPClient;
         }
+
+        public ITCPClient TCPClient { get; set; }
 
         public void Process(List<FileModel> fileModels)
         {
             m_settingsDataProvider.LoadData();
 
             var ext = m_settingsDataProvider.GetData().FileExtensionForReplace;
-            
+
             foreach (FileModel fileModel in fileModels)
             {
                 var srcPath = fileModel.PathToFile;

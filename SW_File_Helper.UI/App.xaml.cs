@@ -68,13 +68,19 @@ namespace SW_File_Helper
 
             services.AddSingleton(c =>
             {
+                var settingsPageVM = c.GetRequiredService<SettingsPageViewModel>();
+
                 var vm = c.GetRequiredService<MainWindowViewModel>();
+                settingsPageVM.OnStartClients += vm.OnStartClientButtonPressed;
+                settingsPageVM.OnStopClients += vm.OnStopClientButtonPressed;
+
                 var mainWindow = new MainWindow();
                 Application.Current.MainWindow = mainWindow;
 
                 vm.WindowClosed += (sender, args) =>
                 {
                     mainWindow.Close();
+                    vm.OnStopClientButtonPressed();
                 };
 
                 mainWindow.DataContext = vm;

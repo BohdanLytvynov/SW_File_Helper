@@ -10,9 +10,11 @@
 
     <DataTemplate DataType="{x:Type vm:ConsoleMessageViewModel}">
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding ClientIp, UpdateSourceTrigger=PropertyChanged}"
+            <TextBlock Text="{Binding ClientIp, UpdateSourceTrigger=PropertyChanged, StringFormat='>{0}:'}"
                        Style="{Binding Style, UpdateSourceTrigger=PropertyChanged}"
                 />
+            <TextBlock Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
+                       Style="{Binding Style, UpdateSourceTrigger=PropertyChanged}"/>
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

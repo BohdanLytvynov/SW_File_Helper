@@ -16,9 +16,12 @@ namespace SW_File_Helper.BL.Net.TCPListeners
         public IPEndPoint Endpoint { get; set; }
         public TNetworkStreamProcessor NetworkStreamProcessor { get; set; }
 
-        public TCPListener(ILogger logger) : base(logger)
+        public TCPListener(ILogger logger, TNetworkStreamProcessor networkStreamProcessor) : base(logger)
         {
-            
+            if(networkStreamProcessor == null)
+                throw new NullReferenceException(nameof(networkStreamProcessor));
+
+            NetworkStreamProcessor = networkStreamProcessor;
         }
 
         public override void Dispose()
@@ -79,7 +82,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
                 instance.Start();
 
-                Logger.Ok($"Server started... \nServer listening to {Endpoint.Address.ToString()}:{Endpoint.Port}");
+                Logger.Ok($"Server started... \nServer listening to {Endpoint.Port} Port");
 
                 m_listenerTask.Start();
             }
@@ -127,9 +130,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                         continue;
                     }
 
-                    Logger.Info($"NetworkStream with {netStream.Length} recieved...");
-
-                    NetworkStreamProcessor.ProcessNetworkStream(netStream, senderIP.Address.ToString());
+                    NetworkStreamProcessor.ProcessNetworkStream(netStream, senderIP.ToString());
                 }
             }
             catch (Exception ex)
