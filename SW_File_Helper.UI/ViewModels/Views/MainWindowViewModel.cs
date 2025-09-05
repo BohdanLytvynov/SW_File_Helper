@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
-using SW_File_Helper.BL.Helpers;
-using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
@@ -16,10 +14,8 @@ using SW_File_Helper.ViewModels.Models.Logs.Base;
 using SW_File_Helper.Views;
 using SW_File_Helper.Views.Pages;
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using static SW_File_Helper.Controls.EditableListView;
 
@@ -69,10 +65,6 @@ namespace SW_File_Helper.ViewModels.Views
         private LogViewModel m_LogMessage;
 
         private ResourceDictionary m_commonResourceDictionary;
-
-        private ITCPClient m_tcpMessageClient;
-
-        private ITCPClient m_tcpFileClient;
         #endregion
 
         #region Properties
@@ -138,10 +130,6 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
-
-            m_tcpMessageClient = new TCPClient(m_consoleLogger, "Message Client");
-
-            m_tcpFileClient = new TCPClient(m_consoleLogger, "File Client");
         }
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
@@ -149,20 +137,6 @@ namespace SW_File_Helper.ViewModels.Views
             LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
-        public void OnStartClientButtonPressed()
-        {
-            ConfigureTCPClients();
-
-            InitTCPCLients();
-
-            CheckTCPConnections();
-        }
-
-        public void OnStopClientButtonPressed()
-        {
-            m_tcpMessageClient.Dispose();
-            m_tcpFileClient.Dispose();
-        }
         public MainWindowViewModel()
         {
             #region Field Initialization
@@ -215,29 +189,6 @@ namespace SW_File_Helper.ViewModels.Views
 
         #region Methods
 
-        private void CheckTCPConnections()
-        {
-            m_tcpMessageClient.SendMessage("Testing Message Client Connection");
-            m_tcpFileClient.SendMessage("Testing File Client Connection");
-        }
-
-        private void ConfigureTCPClients()
-        {
-            var settings = m_settingsDataProvider.GetData();
-            var hostIP = settings.HostIPAddress;
-            var msgListenerPort = settings.MessageListenerPort;
-            var fileListenerPort = settings.FileListenerPort;
-
-            m_tcpMessageClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort);
-            m_tcpFileClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), fileListenerPort);
-        }
-
-        private void InitTCPCLients()
-        { 
-            m_tcpMessageClient.Init();
-            m_tcpFileClient.Init();
-        }
-
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
         {
             var files = m_favoritesRepository.GetAll(ids);
@@ -285,26 +236,17 @@ namespace SW_File_Helper.ViewModels.Views
         {
             var settings = m_settingsDataProvider.GetData();
             var hostIP = settings.HostIPAddress;
-            var msgListenerPort = settings.MessageListenerPort;
-            var fileListenerPort = settings.FileListenerPort;
 
             var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
 
-            if (settings.EnableRemoteMode)
-            {
-                
-            }
-            else
-            {
-                List<FileModel> fileModels = new List<FileModel>();
+            List<FileModel> fileModels = new List<FileModel>();
 
-                foreach (var file in filesToProcess)
-                {
-                    fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
-                }
-
-                m_fileProcessor.Process(fileModels);
+            foreach (var file in filesToProcess)
+            {
+                fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
             }
+
+            m_fileProcessor.Process(fileModels);
         }
 
         #endregion

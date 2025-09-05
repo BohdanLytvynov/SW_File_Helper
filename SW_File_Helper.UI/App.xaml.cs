@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
-using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Favorites;
 using SW_File_Helper.DAL.DataProviders.Settings;
@@ -71,16 +70,12 @@ namespace SW_File_Helper
                 var settingsPageVM = c.GetRequiredService<SettingsPageViewModel>();
 
                 var vm = c.GetRequiredService<MainWindowViewModel>();
-                settingsPageVM.OnStartClients += vm.OnStartClientButtonPressed;
-                settingsPageVM.OnStopClients += vm.OnStopClientButtonPressed;
-
+                
                 var mainWindow = new MainWindow();
-                Application.Current.MainWindow = mainWindow;
 
                 vm.WindowClosed += (sender, args) =>
                 {
                     mainWindow.Close();
-                    vm.OnStopClientButtonPressed();
                 };
 
                 mainWindow.DataContext = vm;

@@ -22,7 +22,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Vertical" Grid.Column="0" Margin="30">
+            <StackPanel Orientation="Vertical" Grid.Column="0" Margin="30" VerticalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                     <TextBlock Text="File extension:" 
                                Style="{StaticResource TextBlockInputStyle}"/>
@@ -37,121 +37,56 @@
                         </TextBox.Text>
                     </TextBox>
                 </StackPanel>
-                <Border Style="{StaticResource FilePathBorder}" 
-                        Margin="0,30"
-                        BorderThickness="2">
-                    <StackPanel Orientation="Vertical">
-                        <CheckBox x:Name="checkBoxEnable"
-                                  Content="Enable Remote File Processing" FontSize="18"
-                                  VerticalContentAlignment="Center"
-                                  IsChecked="{Binding RemoteModeEnabled, 
-                            UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                  />
-                        <StackPanel x:Name="Container" 
-                                    IsEnabled="{Binding ElementName=checkBoxEnable, 
-                            Path=IsChecked, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}">
-                            <StackPanel Orientation="Horizontal"
-                                    Style="{StaticResource InputFieldContainer}">
-                                <TextBlock Style="{StaticResource TextBlockInputStyle}"
-                               Text="Provide Host IPAddress:"/>
-                                <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="120">
-                                    <TextBox.Text>
-                                        <Binding Path="HostIPAddress" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                                            <Binding.ValidationRules>
-                                                <DataErrorValidationRule/>
-                                            </Binding.ValidationRules>
-                                        </Binding>
-                                    </TextBox.Text>
-                                </TextBox>
-                                <Button Content="*" 
-                                        Width="20" 
-                                        Margin="5,0,0,0" 
-                                        FontSize="16" 
-                                        FontWeight="ExtraBold"
-                                        Command="{Binding OnAddToFavoritesIPButtonPressed}"/>
-                                <ToggleButton Content="^" 
-                                  Width="20" 
-                                  Margin="5,0,0,0" 
-                                  RenderTransformOrigin="0.5 0.5"
-                                  FontSize="16" 
-                                  FontWeight="ExtraBold" x:Name="popupToggle"
-                                  IsChecked="{Binding ShowPopup, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
-                                    <ToggleButton.RenderTransform>
-                                        <RotateTransform x:Name="toggleAngle" Angle="180"/>
-                                    </ToggleButton.RenderTransform>
-                                </ToggleButton>
-                                <Popup AllowsTransparency="True" Height="200" Width="300" StaysOpen="True" 
-                           IsOpen="{Binding ShowPopup, UpdateSourceTrigger=PropertyChanged}" Placement="Bottom" 
-                           PlacementTarget="{Binding ElementName=popupToggle}">
-                                    <Border Background="White" 
-                                            Style="{StaticResource FilePathBorder}">
-                                        <StackPanel Orientation="Vertical">
-                                            <TextBlock Text="Choose one of IPs:"/>
-                                            <ListView 
-                                    Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
-                                    AncestorType=Popup}, 
-                                    Path=Height, 
-                                    UpdateSourceTrigger=PropertyChanged}"
-                                    ItemsSource="{Binding FavoriteIPs, UpdateSourceTrigger=PropertyChanged}"
-                                    SelectedItem="{Binding SelectedIpAddress, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                    Margin="0,0,0,5"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Popup>
+                <StackPanel Orientation="Horizontal"
+                            Style="{StaticResource InputFieldContainer}">
+                    <TextBlock Style="{StaticResource TextBlockInputStyle}"
+                               Text="Provide Host IPAddress:" Margin="0,0,16,0"/>
+                    <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="120">
+                        <TextBox.Text>
+                            <Binding Path="HostIPAddress" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                                <Binding.ValidationRules>
+                                    <DataErrorValidationRule/>
+                                </Binding.ValidationRules>
+                            </Binding>
+                        </TextBox.Text>
+                    </TextBox>
+                    <Button Content="*" 
+                            Width="20" 
+                            Margin="5,0,0,0" 
+                            FontSize="16" 
+                            FontWeight="ExtraBold"
+                            Command="{Binding OnAddToFavoritesIPButtonPressed}"/>
+                    <ToggleButton Content="^" 
+       Width="20" 
+       Margin="5,0,0,0" 
+       RenderTransformOrigin="0.5 0.5"
+       FontSize="16" 
+       FontWeight="ExtraBold" x:Name="popupToggle"
+       IsChecked="{Binding ShowPopup, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                        <ToggleButton.RenderTransform>
+                            <RotateTransform x:Name="toggleAngle" Angle="180"/>
+                        </ToggleButton.RenderTransform>
+                    </ToggleButton>
+                    <Popup AllowsTransparency="True" Height="200" Width="300" StaysOpen="True" 
+IsOpen="{Binding ShowPopup, UpdateSourceTrigger=PropertyChanged}" Placement="Bottom" 
+PlacementTarget="{Binding ElementName=popupToggle}">
+                        <Border Background="White" 
+                 Style="{StaticResource FilePathBorder}">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="Choose one of IPs:"/>
+                                <ListView 
+         Height="{Binding RelativeSource={RelativeSource Mode=FindAncestor, 
+         AncestorType=Popup}, 
+         Path=Height, 
+         UpdateSourceTrigger=PropertyChanged}"
+         ItemsSource="{Binding FavoriteIPs, UpdateSourceTrigger=PropertyChanged}"
+         SelectedItem="{Binding SelectedIpAddress, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+         Margin="0,0,0,5"/>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
-                                <TextBlock Style="{StaticResource TextBlockInputStyle}"
-               Text="Message Listener Port:"/>
-                                <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200"
-                             Margin="9,0,0,0">
-                                    <TextBox.Text>
-                                        <Binding Path="MessageListenerPortString" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                                            <Binding.ValidationRules>
-                                                <DataErrorValidationRule/>
-                                            </Binding.ValidationRules>
-                                        </Binding>
-                                    </TextBox.Text>
-                                </TextBox>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
-                                <TextBlock Style="{StaticResource TextBlockInputStyle}"
-                                           Text="File Listener Port:"/>
-                                <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200"
-                                         Margin="48,0,0,0">
-                                    <TextBox.Text>
-                                        <Binding Path="FileListenerPortString" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
-                                            <Binding.ValidationRules>
-                                                <DataErrorValidationRule/>
-                                            </Binding.ValidationRules>
-                                        </Binding>
-                                    </TextBox.Text>
-                                </TextBox>
-                            </StackPanel>
-                            <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
-                                <TextBlock Style="{StaticResource TextBlockInputStyle}"
-                      Text="Client Status:" Margin="0,0,0,0"/>
-                                <TextBlock Text="{Binding ClientControlButtonContent, 
-                                                 UpdateSourceTrigger=PropertyChanged}" 
-                                           Style="{StaticResource TextBlockInputStyle}">
-                                </TextBlock>
-                            </StackPanel>
-                            <Grid Height="40" Margin="0,20,0,20">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
-                                    <ColumnDefinition Width="140"/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Button Content="{Binding StartClientButtonContent, 
-                                    UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
-                                        Style="{StaticResource Button}" Grid.Column="1"
-                                        Command="{Binding OnStartClientButtonPressed}"/>
-                            </Grid>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                        </Border>
+                    </Popup>
+                </StackPanel>
             </StackPanel>
-
         </Grid>
-
     </Grid>
 </Page>

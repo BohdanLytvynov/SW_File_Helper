@@ -11,27 +11,13 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 {
     public class SettingsPageViewModel : ValidatableViewModel
     {
-        #region Events
-        public event Action OnStartClients;
-
-        public event Action OnStopClients;
-        #endregion
-
         #region Fields
         private string m_fileExtensionForReplace;
 
-        private bool m_remoteModeEnabled;
-
         private string m_hostIpAddress;
 
-        private string m_MessageListenerPortString;
-
-        private string m_FileListenerPortString;
-
         private ObservableCollection<string> m_FavoriteIps;
-
-        private bool m_clientStatus;//do we need this?
-
+        
         private bool m_showPopup;
 
         private string m_SelectedIPAddress;
@@ -39,10 +25,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         private ISettingsDataProvider m_dataProvider;
 
         private IFavoritesRepository m_favoritesRepository;
-
-        private string m_StartClientButtonContent;
-
-        private bool m_ClientsStarted;
         #endregion
 
         #region Properties
@@ -52,31 +34,11 @@ namespace SW_File_Helper.ViewModels.Views.Pages
             set=>Set(ref m_fileExtensionForReplace, value);
         }
 
-        public bool RemoteModeEnabled
-        { 
-            get => m_remoteModeEnabled;
-            set
-            {
-                Set(ref m_remoteModeEnabled, value);
-                m_dataProvider.GetData().EnableRemoteMode = value;
-                m_dataProvider.SaveData();
-            }
-        }
-
         public string HostIPAddress 
         { get=> m_hostIpAddress; set => Set(ref m_hostIpAddress, value); }
 
-        public string MessageListenerPortString
-        { get=> m_MessageListenerPortString; set => Set(ref m_MessageListenerPortString, value); }
-
-        public string FileListenerPortString
-        { get=> m_FileListenerPortString; set=> Set(ref m_FileListenerPortString, value); }
-
         public ObservableCollection<string> FavoriteIPs
         { get=> m_FavoriteIps; set=> m_FavoriteIps = value; }
-
-        public bool ClientStatus//do we need this?
-        { get=> m_clientStatus; set=> Set(ref m_clientStatus, value); }
 
         public bool ShowPopup
         { get => m_showPopup; set=> Set(ref m_showPopup, value); }
@@ -91,10 +53,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 ShowPopup = false;
             }
         }
-        public string StartClientButtonContent
-        { get => m_StartClientButtonContent; set => Set(ref m_StartClientButtonContent, value); }
-        public bool ClientsStarted
-        { get => m_ClientsStarted; set => Set(ref m_ClientsStarted, value); }
 
         #endregion
 
@@ -109,16 +67,22 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 switch (columnName)
                 {
                     case nameof(FileExtensionForReplace):
-                        SetValidArrayValue(0, !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error));
+                        isValid = !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error);
+                        SetValidArrayValue(0, isValid);
+                        if (isValid)
+                        { 
+                            m_dataProvider.GetData().FileExtensionForReplace = FileExtensionForReplace;
+                            m_dataProvider.SaveData();
+                        }
                         break;
                     case nameof(HostIPAddress):
-                        SetValidArrayValue(1, ValidationHelpers.IsIPAddressValid(HostIPAddress, out error));
-                        break;
-                    case nameof(MessageListenerPortString):
-                        SetValidArrayValue(2, ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error));
-                        break;
-                    case nameof(FileListenerPortString):
-                        SetValidArrayValue(3, ValidationHelpers.IsIntegerNumberValid(FileListenerPortString, out error));
+                        isValid = ValidationHelpers.IsIPAddressValid(HostIPAddress, out error);
+                        SetValidArrayValue(1, isValid);
+                        if (isValid)
+                        { 
+                            m_dataProvider.GetData().HostIPAddress = HostIPAddress;
+                            m_dataProvider.SaveData();
+                        }
                         break;
                 }
 
@@ -129,8 +93,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         #region Commands
         public ICommand OnAddToFavoritesIPButtonPressed { get; }
-
-        public ICommand OnStartClientButtonPressed { get; }
         #endregion
 
         #region Ctor
@@ -160,10 +122,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
             m_SelectedIPAddress = string.Empty;
 
-            m_StartClientButtonContent = "Start Client";
-
-            m_ClientsStarted = false;
-
             InitValidArray(4);
 
             #endregion
@@ -175,11 +133,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 CanOnAddIPAddressToFavoritesButtonPressedExecute
                 );
 
-            OnStartClientButtonPressed = new Command(
-                OnStartServerButtonPressedExecute,
-                CanOnStartServerButtonPressedExecute
-                );
-
             #endregion
         }
         #endregion
@@ -189,23 +142,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         #region On Start Client Button Pressed
 
         private bool CanOnStartServerButtonPressedExecute(object p) => 
-            ValidateFields(1, GetLastIndexOfValidArray()) && RemoteModeEnabled;
-
-        private void OnStartServerButtonPressedExecute(object p)
-        {
-            ClientsStarted = !ClientsStarted;
-
-            if (ClientsStarted)
-            {
-                OnStartClients?.Invoke();
-                StartClientButtonContent = "Stop Client";
-            }
-            else
-            {
-                OnStopClients?.Invoke();
-                StartClientButtonContent = "Start Client";
-            }
-        }
+            ValidateFields(1, GetLastIndexOfValidArray());
 
         #endregion
 
@@ -227,10 +164,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         {
             var settings = m_dataProvider.GetData();
             m_fileExtensionForReplace = settings.FileExtensionForReplace;
-            m_remoteModeEnabled = settings.EnableRemoteMode;
-            m_hostIpAddress = settings.HostIPAddress;
-            m_MessageListenerPortString = settings.MessageListenerPort.ToString();
-            m_FileListenerPortString = settings.FileListenerPort.ToString();
         }
 
         private void InitFavoritesIPAddresses()
