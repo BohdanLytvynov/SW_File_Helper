@@ -1,13 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor;
-using SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors;
-using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
-using SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors;
-using SW_File_Helper.BL.Net.TCPMessageListener;
+using SW_File_Helper.BL.FileProcessors;
 using SW_File_Helper.Loggers;
 using SW_File_Helper.ServiceWrappers;
 using SW_File_Helper_Server.ViewModels;
+using SW_File_Helper.Converters;
 using System.Windows;
+using SW_File_Helper.BL.Net.TCPListeners;
+using SW_File_Helper.BL.Net.NetworkStreamProcessorWrappers.Base;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors;
+using System.ComponentModel;
 
 namespace SW_File_Helper_Server
 {
@@ -34,13 +38,49 @@ namespace SW_File_Helper_Server
             var services = new ServiceCollection();
 
             #region Do Initial Setup Here
+            services.AddSingleton<IProcessFilesCommandToFileModelConverter, ProcessFilesCommandToFileModelConverter>();
             services.AddSingleton<ServiceWrapper>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<IConsoleLogger, ConsoleLogger>();
+            services.AddSingleton<IMessageStreamProcessor, MessageStreamProcessor>();
+            services.AddSingleton<ICommandStreamProcessor, CommandStreamProcessor>();
+            services.AddSingleton<IFileStreamProcessor, FileStreamProcessor>();
+            services.AddSingleton<INetworkStreamProcessorWrapper>(c => 
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+
+                INetworkStreamProcessor msgProcessor = c.GetRequiredService<IMessageStreamProcessor>();
+                INetworkStreamProcessor commandProcessor = c.GetRequiredService<ICommandStreamProcessor>();
+                commandProcessor.Next = msgProcessor;
+                INetworkStreamProcessor fileProcessor = c.GetRequiredService<IFileStreamProcessor>();
+                fileProcessor.Next = commandProcessor;
+
+                INetworkStreamProcessorWrapper networkStreamProcessorWrapper = 
+                new NetworkStreamProcessorWrapper(logger, msgProcessor);
+
+                return networkStreamProcessorWrapper;
+            });
+            services.AddSingleton<ITCPListener>(c =>
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+                var networkStreamProcessorWrapper = c.GetRequiredService<INetworkStreamProcessorWrapper>();
+
+                ITCPListener tCPListener = new TCPListener(logger, networkStreamProcessorWrapper, "TCP Listener");
+                return tCPListener;
+            });
+            services.AddSingleton(c => 
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+
+                return new FileProcessor(logger);
+            });
             services.AddSingleton<MainWindow>(c =>
             {
                 var vm = c.GetRequiredService<MainWindowViewModel>();
                 var mainWindow = new MainWindow();
+                mainWindow.Closing += (object s, CancelEventArgs e) => {
+                    vm.StopServers();
+                };
 
                 mainWindow.DataContext = vm;
                 vm.Dispatcher = mainWindow.Dispatcher;
@@ -61,9 +101,7 @@ namespace SW_File_Helper_Server
 
         protected override void OnExit(ExitEventArgs e)
         {
-            //var SettingsDataProvider = m_serviceProvider.GetService<ISettingsDataProvider>();
-
-            //SettingsDataProvider.SaveData();
+            
 
             base.OnExit(e);
         }

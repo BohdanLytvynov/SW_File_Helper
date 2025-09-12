@@ -79,6 +79,14 @@
             File.Copy(srcPath, destPath);
         }
 
+        public static FileStream GetStreamToFile(string path)
+        { 
+            if(string.IsNullOrEmpty(path))
+                throw new ArgumentNullException(nameof(path));
+
+            return File.OpenRead(path);
+        }
+
         private static void CheckPathIsNull(string path)
         { 
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("path");

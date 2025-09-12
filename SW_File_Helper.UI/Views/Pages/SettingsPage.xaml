@@ -26,7 +26,7 @@
                 <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                     <TextBlock Text="File extension:" 
                                Style="{StaticResource TextBlockInputStyle}"/>
-                    <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200"
+                    <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="120"
                              Margin="76,0,0,0">
                         <TextBox.Text>
                             <Binding Path="FileExtensionForReplace" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
@@ -101,9 +101,9 @@
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                                 <TextBlock Style="{StaticResource TextBlockInputStyle}"
-               Text="Message Listener Port:"/>
-                                <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200"
-                             Margin="9,0,0,0">
+               Text="TCP Listener Port:"/>
+                                <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="120"
+                             Margin="45,0,0,0">
                                     <TextBox.Text>
                                         <Binding Path="MessageListenerPortString" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                                             <Binding.ValidationRules>
@@ -113,7 +113,7 @@
                                     </TextBox.Text>
                                 </TextBox>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
+                            <!--<StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                                 <TextBlock Style="{StaticResource TextBlockInputStyle}"
                                            Text="File Listener Port:"/>
                                 <TextBox Style="{StaticResource TxtBoxInputStyle}" MinWidth="200"
@@ -126,7 +126,7 @@
                                         </Binding>
                                     </TextBox.Text>
                                 </TextBox>
-                            </StackPanel>
+                            </StackPanel>-->
                             <StackPanel Orientation="Horizontal" Style="{StaticResource InputFieldContainer}">
                                 <TextBlock Style="{StaticResource TextBlockInputStyle}"
                       Text="Client Status:" Margin="0,0,0,0"/>

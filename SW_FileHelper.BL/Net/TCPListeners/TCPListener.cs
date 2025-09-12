@@ -1,27 +1,25 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
+using SW_File_Helper.BL.Net.NetworkStreamProcessorWrappers.Base;
 using System.Net;
 using System.Net.Sockets;
 
 namespace SW_File_Helper.BL.Net.TCPListeners
 {
-    public class TCPListener<TNetworkStreamProcessor> : TCPBase<TcpListener>,
-        ITCPListener<TNetworkStreamProcessor>
-        where TNetworkStreamProcessor : INetworkStreamProcessor
+    public class TCPListener : TCPBase<TcpListener>, ITCPListener
     {
         private Task m_listenerTask;
         private CancellationTokenSource m_cancellationTokenSource;
         
         public IPEndPoint Endpoint { get; set; }
-        public TNetworkStreamProcessor NetworkStreamProcessor { get; set; }
+        public INetworkStreamProcessorWrapper NetworkStreamProcessor { get; set; }
 
-        public TCPListener(ILogger logger, TNetworkStreamProcessor networkStreamProcessor) : base(logger)
+        public TCPListener(ILogger logger, INetworkStreamProcessorWrapper networkStreamProcessor, 
+            string clientName)
+            : base(logger, clientName)
         {
-            if(networkStreamProcessor == null)
-                throw new NullReferenceException(nameof(networkStreamProcessor));
-
-            NetworkStreamProcessor = networkStreamProcessor;
+            NetworkStreamProcessor = networkStreamProcessor ?? throw new NullReferenceException(nameof(networkStreamProcessor));
         }
 
         public override void Dispose()
@@ -30,26 +28,26 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 
             if (instance == null)
             {
-                Logger.Error($"Instance wasn't initialized!");
+                Logger.Error($"Instance {ClientName} wasn't initialized!");
             }
 
             try
             {
-                Logger.Info("Releasing server resources...");
+                Logger.Info($"Releasing {ClientName} resources...");
                 instance = GetInstance();
                 instance.Dispose();
                 instance = null;
-                Logger.Ok("Server resources released...");
+                Logger.Ok($"{ClientName} resources released...");
             }
             catch (Exception ex)
             {
-                Logger.Info($"Error on releasing server resources! Error: {ex}");
+                Logger.Info($"Error on releasing {ClientName} resources! Error: {ex}");
             }
         }
 
         public override void Init()
         {
-            Logger.Info("Initializing Server...");
+            Logger.Info($"Initializing {ClientName}...");
             var instance = GetInstance();
 
             if (instance == null)
@@ -58,11 +56,11 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                 {
                     instance = new TcpListener(Endpoint);
                     SetInstance(instance);
-                    Logger.Ok("Server initialized.");
+                    Logger.Ok($"{ClientName} initialized.");
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Error on initialization of the TcpListener! Error: {ex}");
+                    Logger.Error($"Error on initialization of the {ClientName}! Error: {ex}");
                 }
                 
             }
@@ -76,19 +74,19 @@ namespace SW_File_Helper.BL.Net.TCPListeners
         {
             try
             {
-                Logger.Info("Starting Server...");
+                Logger.Info($"Starting {ClientName}...");
 
                 var instance = GetInstance();
 
                 instance.Start();
 
-                Logger.Ok($"Server started... \nServer listening to {Endpoint.Port} Port");
+                Logger.Ok($"{ClientName} started... \n{ClientName} listening to {Endpoint.Port} Port");
 
                 m_listenerTask.Start();
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error on Starting TCP Listener! Error: {ex}");
+                Logger.Error($"Error on Starting {ClientName}! Error: {ex}");
             }
         }
 

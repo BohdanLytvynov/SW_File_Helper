@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
 using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
@@ -52,7 +53,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private IListViewFileViewModelToFileModelConverter? m_fileViewModelToFileModelConverter;
 
-        private IFileProcessor? m_fileProcessor;
+        private IRemoteFileProcessor? m_fileProcessor;
 
         private OnShowFavoritesFired m_OnShowFavoritesFired;
 
@@ -70,9 +71,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private ResourceDictionary m_commonResourceDictionary;
 
-        private ITCPClient m_tcpMessageClient;
-
-        private ITCPClient m_tcpFileClient;
+        private ITCPClient m_tcpClient;
         #endregion
 
         #region Properties
@@ -129,8 +128,7 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_settingsPage = m_serviceWrapper.Services.GetRequiredService<SettingsPage>();
             m_fileViewModelToFileModelConverter = m_serviceWrapper
-                .Services.GetRequiredService<IListViewFileViewModelToFileModelConverter>();
-            m_fileProcessor = m_serviceWrapper.Services.GetRequiredService<IFileProcessor>();
+               .Services.GetRequiredService<IListViewFileViewModelToFileModelConverter>();
 
             m_favoritesRepository = favoritesRepository;
             m_listViewFileViewModelToFileModelConverter = listViewFileViewModelToFileModelConverter;
@@ -139,9 +137,7 @@ namespace SW_File_Helper.ViewModels.Views
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
 
-            m_tcpMessageClient = new TCPClient(m_consoleLogger, "Message Client");
-
-            m_tcpFileClient = new TCPClient(m_consoleLogger, "File Client");
+            m_tcpClient = new TCPClient(m_consoleLogger, "TCP Client");
         }
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
@@ -160,8 +156,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         public void OnStopClientButtonPressed()
         {
-            m_tcpMessageClient.Dispose();
-            m_tcpFileClient.Dispose();
+            m_tcpClient.Dispose();
         }
         public MainWindowViewModel()
         {
@@ -217,25 +212,21 @@ namespace SW_File_Helper.ViewModels.Views
 
         private void CheckTCPConnections()
         {
-            m_tcpMessageClient.SendMessage("Testing Message Client Connection");
-            m_tcpFileClient.SendMessage("Testing File Client Connection");
+            m_tcpClient.SendMessage("TCP connection Test");
         }
 
         private void ConfigureTCPClients()
         {
             var settings = m_settingsDataProvider.GetData();
             var hostIP = settings.HostIPAddress;
-            var msgListenerPort = settings.MessageListenerPort;
-            var fileListenerPort = settings.FileListenerPort;
+            var msgListenerPort = settings.TCPListenerPort;
 
-            m_tcpMessageClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort);
-            m_tcpFileClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), fileListenerPort);
+            m_tcpClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort);
         }
 
         private void InitTCPCLients()
         { 
-            m_tcpMessageClient.Init();
-            m_tcpFileClient.Init();
+            m_tcpClient.Init();
         }
 
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
@@ -283,28 +274,18 @@ namespace SW_File_Helper.ViewModels.Views
 
         private void OnProcessButtonPressedExecute(object p)
         {
-            var settings = m_settingsDataProvider.GetData();
-            var hostIP = settings.HostIPAddress;
-            var msgListenerPort = settings.MessageListenerPort;
-            var fileListenerPort = settings.FileListenerPort;
-
             var filesToProcess = Files.Where(x => x.IsValid && x.IsEnabled).Select(x => x as ListViewFileViewModel);
+            var settings = m_settingsDataProvider;
+            settings.LoadData();
+            var ext = settings.GetData().FileExtensionForReplace;
+            List<FileModel> fileModels = new List<FileModel>();
 
-            if (settings.EnableRemoteMode)
+            foreach (var file in filesToProcess)
             {
-                
+                fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
             }
-            else
-            {
-                List<FileModel> fileModels = new List<FileModel>();
 
-                foreach (var file in filesToProcess)
-                {
-                    fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
-                }
-
-                m_fileProcessor.Process(fileModels);
-            }
+            m_fileProcessor.Process(fileModels, ext);
         }
 
         #endregion

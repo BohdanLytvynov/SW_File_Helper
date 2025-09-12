@@ -1,23 +1,22 @@
 ﻿using SW_File_Helper.BL.Helpers;
-using SW_File_Helper.BL.Net.TCPMessageListener;
 using SW_File_Helper.DAL.Models.TCPModels;
 using SW_File_Helper.Loggers;
 using SW_File_Helper.ViewModels.Base.VM;
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Windows;
 using System.Windows.Input;
 using SW_File_Helper.ViewModels.Models.Logs.Base;
 using UICommand = SW_File_Helper.ViewModels.Base.Commands.Command;
-using SW_File_Helper.BL.Net.MessageProcessors.Base;
-using SW_File_Helper.BL.Net.NetworkStreamProcessors.MessageProcessors;
-using SW_File_Helper.BL.Net.MessageProcessors.MessageProcessor;
-using SW_File_Helper.BL.Net.MessageProcessors.ProcessFilesCommandProcessors;
 using SW_File_Helper.ServiceWrappers;
-using Microsoft.Extensions.DependencyInjection;
-using System.CodeDom;
-using SW_File_Helper.BL.Net.TCPFileListener;
-using SW_File_Helper.BL.Net.NetworkStreamProcessors.FileProcessors;
+using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.Converters;
+using SW_File_Helper.DAL.Models;
+using SW_File_Helper.BL.Net.TCPListeners;
+using System.Net;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor;
+using SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors;
+using Newtonsoft.Json.Linq;
+using Microsoft.VisualBasic;
 
 namespace SW_File_Helper_Server.ViewModels
 {
@@ -27,8 +26,7 @@ namespace SW_File_Helper_Server.ViewModels
         private string m_title;
         private string m_hostname;
         private ObservableCollection<string> m_IPAddresses;
-        private string m_MessageServerPortString;
-        private string m_FileServerPortString;
+        private string m_ListenerPortString;
         private int m_SelectedIPIndex;
         private bool m_StartStop; //Start = false Stop = true;
         private string m_StartButtonContent;
@@ -36,12 +34,19 @@ namespace SW_File_Helper_Server.ViewModels
 
         private IConsoleLogger m_ConsoleLogger;
         private ResourceDictionary m_CommonResources;
+        private ITCPListener m_listener;
+
+        #region Converters
+        IProcessFilesCommandToFileModelConverter m_processFilesCommandToFileModelConverter;
+        #endregion
+
+        #region File Processor
+        IFileProcessor m_fileProcessor;
+        #endregion
+
         #region Servers
 
-        private IMessageNetworkProcessor m_messageNetworkProcessor;
-        private IFileNetworkProcessor m_fileNetworkProcessor;
-        private ITCPMessageListener m_MessageListener;
-        private ITCPFileListener m_FileListener;
+        
 
         #endregion
 
@@ -60,16 +65,10 @@ namespace SW_File_Helper_Server.ViewModels
 
                 switch (columnName)
                 {
-                    case nameof(MessageServerPortString):
+                    case nameof(ListenerPortString):
                         SetValidArrayValue(0, 
                             ValidationHelpers
-                            .IsIntegerNumberValid(MessageServerPortString, out error));
-                        break;
-
-                    case nameof(FileServerPortString):
-                        SetValidArrayValue(1,
-                            ValidationHelpers
-                            .IsIntegerNumberValid(FileServerPortString, out error));
+                            .IsIntegerNumberValid(ListenerPortString, out error));
                         break;
                 }
 
@@ -88,16 +87,10 @@ namespace SW_File_Helper_Server.ViewModels
         public ObservableCollection<string> IPAddresses
         { get=> m_IPAddresses; set=> m_IPAddresses = value; }
 
-        public string MessageServerPortString 
+        public string ListenerPortString 
         {
-          get=> m_MessageServerPortString; 
-          set => Set(ref m_MessageServerPortString, value); 
-        }
-
-        public string FileServerPortString 
-        {
-            get => m_FileServerPortString; 
-            set=> Set(ref m_FileServerPortString, value); 
+          get=> m_ListenerPortString; 
+          set => Set(ref m_ListenerPortString, value); 
         }
 
         public int SelectedIPIndex 
@@ -117,25 +110,22 @@ namespace SW_File_Helper_Server.ViewModels
         
         private void M_ConsoleLogger_OnLogProcessed(object arg1, string arg2, SW_File_Helper.BL.Loggers.Enums.LogType arg3)
         {
-            Message = (LogViewModel)arg1 ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
+            Message = (LogViewModel)arg1 ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");            
         }
 
         public MainWindowViewModel(ServiceWrapper serviceWrapper)
         {
             #region Init Fields
             m_ConsoleLogger = serviceWrapper.GetRequiredService<IConsoleLogger>();
-
-            if(m_ConsoleLogger == null)
-                throw new ArgumentNullException(nameof(m_ConsoleLogger));
-
+            m_fileProcessor = serviceWrapper.GetRequiredService<FileProcessor>();
+            m_processFilesCommandToFileModelConverter = serviceWrapper.GetRequiredService<IProcessFilesCommandToFileModelConverter>();
             m_CommonResources = new ResourceDictionary();
             m_CommonResources.Source = new Uri("/SW_File_Helper;component/Resources/ViewsCommon.xaml", UriKind.RelativeOrAbsolute);
             m_message = new LogViewModel("Console loaded...", m_CommonResources["consoleMsg"] as Style);
             m_StartStop = false;
             m_StartButtonContent = String.Empty;
-            m_MessageServerPortString = String.Empty;
-            m_FileServerPortString = String.Empty;
-            InitValidArray(2);
+            m_ListenerPortString = String.Empty;
+            InitValidArray(1);
             m_title = "SolarWinds File Helper Server V 1.0.0.0";
             m_SelectedIPIndex = -1;
             m_hostname = DnsHelper.GetHostname();
@@ -148,12 +138,16 @@ namespace SW_File_Helper_Server.ViewModels
             CalculateStartButtonContent();
             #endregion
 
-            #region Allocate Server
+            m_ConsoleLogger.OnLogProcessed += M_ConsoleLogger_OnLogProcessed;
 
-            ConfigureNetworkProcessors();
+            #region Get Server
+            m_listener = serviceWrapper.GetRequiredService<ITCPListener>();
+            #endregion
 
-            m_MessageListener = new TCPMessageListener(m_ConsoleLogger, m_messageNetworkProcessor);
-            m_FileListener = new ITCPFileListener(m_ConsoleLogger, );
+            #region Subscribe to Events
+
+            serviceWrapper.GetRequiredService<IMessageStreamProcessor>().OnProcess += OnMessageRecieved;
+            serviceWrapper.GetRequiredService<ICommandStreamProcessor>().OnProcess += OnCommandRecieved;
 
             #endregion
 
@@ -165,6 +159,7 @@ namespace SW_File_Helper_Server.ViewModels
                 );
             #endregion
         }
+
         #endregion
 
         #region Methods
@@ -201,47 +196,38 @@ namespace SW_File_Helper_Server.ViewModels
 
         private void StartServers()
         {
-            m_MessageListener.Endpoint
-                = new IPEndPoint(
-                    IPAddress.Parse(IPAddresses[SelectedIPIndex]),
-                    int.Parse(MessageServerPortString));
-
-            m_MessageListener.Init();
-            m_MessageListener.Start();
+            string ip = IPAddresses[SelectedIPIndex];
+            m_listener.Endpoint = new IPEndPoint(IPAddress.Parse(ip), int.Parse(ListenerPortString));
+            m_listener.Init();
+            m_listener.Start();
         }
 
-        private void StopServers()
+        public void StopServers()
         {
-            m_MessageListener.Stop();
+            m_listener.Stop();
         }
 
-        public void OnMessageRecieved(Message message, string clientIp)
+        public void OnMessageRecieved(string message, string clientIp)
         {
             var msgStyle = m_CommonResources["consoleMsg"] as Style;
             var clientIpStyle = m_CommonResources["ClietIPStyle"] as Style;
-
-            Message = new ConsoleMessageViewModel(clientIp,
-                clientIpStyle, message.Text, msgStyle);
+            QueueJobToDispatcher(() =>
+            {
+                Message = new ConsoleMessageViewModel(clientIp,
+                    clientIpStyle, message, msgStyle);
+            });
         }
 
-        public void OnFileRecieved(Message message, string clientIp)
+        private void OnCommandRecieved(JObject value, string clientIp)
         {
-            var file = (ProcessFilesCommand)message;
-        }
+            string commandType = value["CommandType"].ToString();
+            string commandText = value["Text"].ToString();
 
-        private void ConfigureNetworkProcessors()
-        {
-            MessageProcessor messageProcessor = new MessageProcessor();
-            messageProcessor.OnProcessed += OnMessageRecieved;
-
-            var processfileCommandProcessor = new ProcessFilesCommandProcessor();
-            processfileCommandProcessor.OnProcessed += OnFileRecieved;
-
-            messageProcessor.AddMessageProcessor(processfileCommandProcessor);
-
-            m_messageNetworkProcessor = new MessageNetworkProcessor(messageProcessor, m_ConsoleLogger);
-
-            m_ConsoleLogger.OnLogProcessed += M_ConsoleLogger_OnLogProcessed;
+            if (commandType.Equals(commandType)
+                && commandText.Equals(SW_File_Helper.Common.Constants.PROCESS_FILES_COMMAND))
+            {
+                //To do
+            }
         }
         #endregion
     }

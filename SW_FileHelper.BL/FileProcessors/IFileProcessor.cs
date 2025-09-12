@@ -10,6 +10,6 @@ namespace SW_File_Helper.BL.FileProcessors
 {
     public interface IFileProcessor
     {
-        void Process(List<FileModel> fileModels);
+        void Process(List<FileModel> fileModels, string newExtension);
     }
 }

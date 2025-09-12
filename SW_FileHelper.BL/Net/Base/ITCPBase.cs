@@ -11,6 +11,7 @@ namespace SW_File_Helper.BL.Net.Base
     public interface ITCPBase<TCPInstance> : IDisposable
         where TCPInstance : IDisposable
     {
+        public string ClientName { get; init; }
         public IPEndPoint Endpoint { get; set; }
 
         void Init();

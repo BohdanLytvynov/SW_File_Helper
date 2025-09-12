@@ -1,6 +1,6 @@
 ﻿namespace SW_File_Helper.Converters
 {
-    internal interface IConverter<TSrc, TDst>
+    public interface IConverter<TSrc, TDst>
     {
         TDst Convert(TSrc src);
 

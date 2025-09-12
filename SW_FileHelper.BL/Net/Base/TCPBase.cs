@@ -14,24 +14,21 @@ namespace SW_File_Helper.BL.Net.Base
 
         #region Properties
         public IPEndPoint Endpoint { get; set; }
+
+        public string ClientName { get; init; }
         #endregion
 
         #region Ctor
-        protected TCPBase(ILogger logger)
+        protected TCPBase(ILogger logger, string clientName)
         {
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            Logger = logger;
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ClientName = clientName;
         }
         #endregion
 
         #region Methods
 
-        protected TCPInstance GetInstance()
-        {
-            return m_instance;
-        }
+        protected TCPInstance GetInstance() => m_instance;
 
         protected void SetInstance(TCPInstance instance)
         {

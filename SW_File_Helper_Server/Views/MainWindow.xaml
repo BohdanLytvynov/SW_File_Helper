@@ -59,23 +59,10 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="1">
                         <TextBlock Style="{StaticResource TextBlockInputStyle}"
-                                       Text="Message Listener Port: "/>
+                                       Text="Listener Port: "/>
                         <TextBox MinWidth="80" Style="{StaticResource TxtBoxInputStyle}">
                             <TextBox.Text>
-                                <Binding Path="MessageServerPortString" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
-                                    <Binding.ValidationRules>
-                                        <DataErrorValidationRule/>
-                                    </Binding.ValidationRules>
-                                </Binding>
-                            </TextBox.Text>
-                        </TextBox>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
-                        <TextBlock Style="{StaticResource TextBlockInputStyle}"
-                   Text="File Listener Port: "/>
-                        <TextBox Margin="34,0,0,0" MinWidth="80" Style="{StaticResource TxtBoxInputStyle}">
-                            <TextBox.Text>
-                                <Binding Path="FileServerPortString" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
+                                <Binding Path="ListenerPortString" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged">
                                     <Binding.ValidationRules>
                                         <DataErrorValidationRule/>
                                     </Binding.ValidationRules>

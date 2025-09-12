@@ -1,9 +1,4 @@
 ﻿using SW_File_Helper.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.DAL.Models.TCPModels
 {
@@ -11,9 +6,11 @@ namespace SW_File_Helper.DAL.Models.TCPModels
     {
         public ProcessFilesCommand() : base()
         {
+            CommandType = nameof(ProcessFilesCommand);
             Dest = new List<string>();
             Text = Constants.PROCESS_FILES_COMMAND;
             NewFileExtension = string.Empty;
+            Src = string.Empty;
         }
 
         public string Src { get; set; }

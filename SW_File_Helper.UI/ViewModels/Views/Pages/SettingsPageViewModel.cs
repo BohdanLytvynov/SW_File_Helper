@@ -105,20 +105,35 @@ namespace SW_File_Helper.ViewModels.Views.Pages
             {
                 string error = string.Empty;
                 bool isValid = false;
-
+                var settings = m_dataProvider.GetData();
                 switch (columnName)
                 {
                     case nameof(FileExtensionForReplace):
-                        SetValidArrayValue(0, !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error));
+                        isValid = !ValidationHelpers.IsTextEmpty(FileExtensionForReplace, out error);
+                        SetValidArrayValue(0, isValid);
+                        if (isValid)
+                        { 
+                            settings.FileExtensionForReplace = FileExtensionForReplace;
+                            m_dataProvider.SaveData();
+                        }
                         break;
                     case nameof(HostIPAddress):
-                        SetValidArrayValue(1, ValidationHelpers.IsIPAddressValid(HostIPAddress, out error));
+                        isValid = ValidationHelpers.IsIPAddressValid(HostIPAddress, out error);
+                        SetValidArrayValue(1, isValid);
+                        if (isValid)
+                        { 
+                            settings.HostIPAddress = HostIPAddress;
+                            m_dataProvider.SaveData();
+                        }
                         break;
                     case nameof(MessageListenerPortString):
-                        SetValidArrayValue(2, ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error));
-                        break;
-                    case nameof(FileListenerPortString):
-                        SetValidArrayValue(3, ValidationHelpers.IsIntegerNumberValid(FileListenerPortString, out error));
+                        isValid = ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error);
+                        SetValidArrayValue(2, isValid);
+                        if (isValid)
+                        {
+                            settings.TCPListenerPort = int.Parse(MessageListenerPortString);
+                            m_dataProvider.SaveData();
+                        }
                         break;
                 }
 
@@ -229,8 +244,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
             m_fileExtensionForReplace = settings.FileExtensionForReplace;
             m_remoteModeEnabled = settings.EnableRemoteMode;
             m_hostIpAddress = settings.HostIPAddress;
-            m_MessageListenerPortString = settings.MessageListenerPort.ToString();
-            m_FileListenerPortString = settings.FileListenerPort.ToString();
+            m_MessageListenerPortString = settings.TCPListenerPort.ToString();
         }
 
         private void InitFavoritesIPAddresses()
