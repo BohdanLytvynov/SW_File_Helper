@@ -211,7 +211,6 @@ namespace SW_File_Helper.ViewModels.Views
         private void CheckTCPConnections()
         {
             m_tcpClient.SendMessage("TCP connection Test");
-            m_tcpClient.SendMessage("TCP Test 2");
         }
 
         private void ConfigureTCPClients()
