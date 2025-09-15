@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SW_File_Helper.BL.FileProcessors;
+using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
+using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Favorites;
 using SW_File_Helper.DAL.DataProviders.Settings;
@@ -50,7 +52,20 @@ namespace SW_File_Helper
             services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<ISettingsDataProvider, SettingsDataProvider>();
             services.AddSingleton<SettingsPageViewModel>();
+            services.AddSingleton<ITCPClient>(c => 
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+                ITCPClient tCPClient = new TCPClient(logger, "TCP Client");
+                return tCPClient;
+            });
+            services.AddSingleton<IRemoteFileProcessor>(c => 
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+                var client = c.GetRequiredService<ITCPClient>();
 
+                IRemoteFileProcessor remoteFileProcessor = new RemoteFileProcessor(logger, client);
+                return remoteFileProcessor;
+            });
             services.AddScoped<FavoritesWindowViewModel>();
             services.AddSingleton(config =>
             {
@@ -61,7 +76,6 @@ namespace SW_File_Helper
                 vm.Dispatcher = settingsPage.Dispatcher;
 
                 return settingsPage;
-
             });
 
             services.AddSingleton(c =>

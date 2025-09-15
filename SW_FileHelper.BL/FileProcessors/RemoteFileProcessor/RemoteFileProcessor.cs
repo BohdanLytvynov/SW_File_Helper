@@ -37,17 +37,7 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 
                         var filename = Path.GetFileName(srcPath);
 
-                        foreach (var destPath in fileModel.PathToDst)
-                        {
-
-                            if (m_cancelToken.IsCancellationRequested)
-                            {
-                                TCPClient.SendMessage("Sending of files was aborted by the client!");
-                                break;
-                            }
-
-                            TCPClient.SendFile(destPath + Path.DirectorySeparatorChar + filename);
-                        }
+                        TCPClient.SendFile(srcPath);
 
                         ProcessFilesCommand processFilesCommand = new ProcessFilesCommand();
                         processFilesCommand.Src = srcPath;
@@ -56,8 +46,7 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
                         {
                             processFilesCommand.Dest.Add(dest);
                         }
-                        string data = JsonHelper.SerializeWithNonFormatting(processFilesCommand);
-                        TCPClient.SendMessage(data);
+                        TCPClient.SendCommand(processFilesCommand);
                     }
 
                     //TCPClient.SendMessage();

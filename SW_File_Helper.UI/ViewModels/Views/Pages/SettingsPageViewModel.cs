@@ -24,9 +24,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         private string m_hostIpAddress;
 
-        private string m_MessageListenerPortString;
-
-        private string m_FileListenerPortString;
+        private string m_ListenerPortString;
 
         private ObservableCollection<string> m_FavoriteIps;
 
@@ -66,11 +64,8 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         public string HostIPAddress 
         { get=> m_hostIpAddress; set => Set(ref m_hostIpAddress, value); }
 
-        public string MessageListenerPortString
-        { get=> m_MessageListenerPortString; set => Set(ref m_MessageListenerPortString, value); }
-
-        public string FileListenerPortString
-        { get=> m_FileListenerPortString; set=> Set(ref m_FileListenerPortString, value); }
+        public string ListenerPortString
+        { get=> m_ListenerPortString; set => Set(ref m_ListenerPortString, value); }
 
         public ObservableCollection<string> FavoriteIPs
         { get=> m_FavoriteIps; set=> m_FavoriteIps = value; }
@@ -126,12 +121,12 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                             m_dataProvider.SaveData();
                         }
                         break;
-                    case nameof(MessageListenerPortString):
-                        isValid = ValidationHelpers.IsIntegerNumberValid(MessageListenerPortString, out error);
+                    case nameof(ListenerPortString):
+                        isValid = ValidationHelpers.IsIntegerNumberValid(ListenerPortString, out error);
                         SetValidArrayValue(2, isValid);
                         if (isValid)
                         {
-                            settings.TCPListenerPort = int.Parse(MessageListenerPortString);
+                            settings.TCPListenerPort = int.Parse(ListenerPortString);
                             m_dataProvider.SaveData();
                         }
                         break;
@@ -179,7 +174,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
             m_ClientsStarted = false;
 
-            InitValidArray(4);
+            InitValidArray(3);
 
             #endregion
 
@@ -244,7 +239,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
             m_fileExtensionForReplace = settings.FileExtensionForReplace;
             m_remoteModeEnabled = settings.EnableRemoteMode;
             m_hostIpAddress = settings.HostIPAddress;
-            m_MessageListenerPortString = settings.TCPListenerPort.ToString();
+            m_ListenerPortString = settings.TCPListenerPort.ToString();
         }
 
         private void InitFavoritesIPAddresses()

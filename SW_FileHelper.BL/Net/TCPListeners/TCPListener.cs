@@ -2,6 +2,7 @@
 using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessorWrappers.Base;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 
@@ -35,9 +36,12 @@ namespace SW_File_Helper.BL.Net.TCPListeners
             {
                 Logger.Info($"Releasing {ClientName} resources...");
                 instance = GetInstance();
-                instance.Dispose();
-                instance = null;
-                Logger.Ok($"{ClientName} resources released...");
+                if (instance != null)
+                {
+                    instance.Dispose();
+                    instance = null;
+                    Logger.Ok($"{ClientName} resources released...");
+                }
             }
             catch (Exception ex)
             {
@@ -129,6 +133,8 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                     }
 
                     NetworkStreamProcessor.ProcessNetworkStream(netStream, senderIP.ToString());
+
+                    sender.Close();
                 }
             }
             catch (Exception ex)

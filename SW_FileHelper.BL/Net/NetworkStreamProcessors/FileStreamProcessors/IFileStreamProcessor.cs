@@ -1,14 +1,12 @@
-﻿using SW_File_Helper.BL.Net.Base;
+﻿using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
 {
     public interface IFileStreamProcessor : INetworkStreamProcessor
     {
+        public ILogger Logger { get; set; }
+
+        public string PathToTemp { get; init; }
     }
 }

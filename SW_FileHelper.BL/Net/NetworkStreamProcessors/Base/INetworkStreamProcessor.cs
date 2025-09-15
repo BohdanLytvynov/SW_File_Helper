@@ -5,6 +5,8 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
 {
     public interface INetworkStreamProcessor
     {
+        public int RecieveBufferSize { get; set; }
+
         public INetworkStreamProcessor Next { get; set; }
         MessageType MessageType { get; init; }
 

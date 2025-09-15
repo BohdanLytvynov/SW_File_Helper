@@ -1,4 +1,5 @@
 ﻿using SW_File_Helper.BL.Net.Base;
+using SW_File_Helper.DAL.Models.TCPModels;
 using System.Net.Sockets;
 
 namespace SW_File_Helper.BL.Net.TCPClients
@@ -14,5 +15,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
         void SendFile(string path);
 
         void SendMessage(string msg);
+
+        void SendCommand(Command command);
     }
 }

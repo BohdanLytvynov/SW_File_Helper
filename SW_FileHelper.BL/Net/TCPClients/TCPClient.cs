@@ -4,6 +4,7 @@ using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.DAL.Helpers;
 using SW_File_Helper.DAL.Models.TCPModels;
 using SW_File_Helper.DAL.Models.TCPModels.Enums;
+using SW_File_Helper.DAL.Models.TCPModels.FileMetadata;
 using System.Net.Sockets;
 using System.Text;
 
@@ -64,7 +65,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 catch (Exception ex)
                 {
                     Logger.Error($"Error on initialization of the {ClientName}! Error: {ex}");
-                }                
+                }
             }
 
             if (SendingBufferSize == 0)
@@ -82,7 +83,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
             }
         }
 
-        public void SendMessage(string msg)
+        public void SendCommand(Command command)
         {
             byte[] sendBuffer = null;
             var tcpInstance = GetInstance();
@@ -91,6 +92,42 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 Logger.Error($"Tcp instance of the {ClientName} wasn't initialized!");
             }
 
+            try
+            {
+                Logger.Info($"Sending {command.CommandType} to the Listener");
+                var networkStream = tcpInstance.GetStream();
+
+                if (networkStream == null)
+                {
+                    Logger.Error($"Error on getting NetworkStream!");
+                    return;
+                }
+                SendMessageType(MessageType.Command, networkStream);
+
+                string commandStr = JsonHelper.SerializeWithNonFormatting(command);
+                sendBuffer = Encoding.UTF8.GetBytes(commandStr);
+                
+                SendMessageSize(sendBuffer, networkStream);
+
+                networkStream.Write(sendBuffer, 0, sendBuffer.Length);
+                Logger.Ok($"{command.CommandType} was sent successfuly.");
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"Error occured during message sending! Error: {ex}");
+            }
+        }
+
+        public void SendMessage(string msg)
+        {
+
+            byte[] sendBuffer = null;
+            var tcpInstance = GetInstance();
+            if (tcpInstance == null)
+            {
+                Logger.Error($"Tcp instance of the {ClientName} wasn't initialized!");
+            }
+            var b = tcpInstance.Connected;
             try
             {
                 Logger.Info($"Sending message: {msg}");
@@ -103,11 +140,9 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 }
                 SendMessageType(MessageType.Message, networkStream);
 
-                var msgLength = msg.Length;
-                sendBuffer = BitConverter.GetBytes(msgLength);
-                networkStream.Write(sendBuffer, 0, sendBuffer.Length);
-
                 sendBuffer = Encoding.UTF8.GetBytes(msg);
+                SendMessageSize(sendBuffer, networkStream);
+
                 networkStream.Write(sendBuffer, 0, sendBuffer.Length);
                 Logger.Ok($"Message: {msg} was sent successfuly.");
             }
@@ -149,53 +184,45 @@ namespace SW_File_Helper.BL.Net.TCPClients
             byte[] sendingBuffer = null;
             try
             {
-
+                var instance = GetInstance();
+                if (instance == null)
+                {
+                    Logger.Error("TcpClient instance wasn't initialized!");
+                    return;
+                }
 
                 using (var fs = File.Open(path, FileMode.Open, FileAccess.Read))
                 {
-                    var instance = GetInstance();
-
-                    if (instance == null)
-                        Logger.Error("TcpClient instance wasn't initialized!");
-
                     var networkStream = instance.GetStream();
 
                     if (instance == null)
+                    {
                         Logger.Error("Failed to get NetworkStream!");
+                        return;
+                    }
 
-                    //1) Get file size
+                    SendMessageType(MessageType.File, networkStream);
+                    
                     long fileSize = fs.Length;
-                    byte[] fileSizeData = BitConverter.GetBytes(fileSize);
-
-                    //Send file size
-                    networkStream.Write(fileSizeData, 0, fileSizeData.Length);
-
                     string fileName = Path.GetFileName(path);
-                    byte[] fileNameData = System.Text.Encoding.UTF8.GetBytes(fileName);
-                    Logger.Info($"Sending file: {path}, {fileSize} Bytes");
-                    //Send file name
-                    networkStream.Write(fileNameData, 0, fileNameData.Length);
-
-                    //Send file 
-                    //1)Calculate the count of packets
                     int NoOfPackets = CalculateAmountOfPackets(fileSize, SendingBufferSize);
-                    long currentPacketLength = 0;
+                    Logger.Info($"Sending {fileName} to the client.");
                     Logger.Info($"Calculated amount of packets: {NoOfPackets}");
+                    FileMetadata fileMetadata = new FileMetadata(fileSize, fileName, NoOfPackets);
+                    string jsonFileMetadata = JsonHelper.Serialize(fileMetadata);
+                    sendingBuffer = Encoding.UTF8.GetBytes(jsonFileMetadata);
+
+                    SendMessageSize(sendingBuffer, networkStream);
+                    networkStream.Write(sendingBuffer, 0, sendingBuffer.Length);
+                    int position = 0;
+                    //Send file 
                     for (int i = 0; i < NoOfPackets; i++)
                     {
-                        if (fileSize > SendingBufferSize)
-                        {
-                            currentPacketLength = SendingBufferSize;
-                            fileSize -= currentPacketLength;
-                        }
-                        else 
-                        {
-                            currentPacketLength = fileSize;
-                            sendingBuffer = new byte[SendingBufferSize];
-                            fs.Read(sendingBuffer, 0, sendingBuffer.Length);
-                            networkStream.Write(sendingBuffer, 0, sendingBuffer.Length);
-                        }
-
+                        sendingBuffer = new byte[SendingBufferSize];
+                        fs.Read(sendingBuffer, 0, sendingBuffer.Length);
+                        networkStream.Write(sendingBuffer, 0, sendingBuffer.Length);
+                        position += SendingBufferSize;
+                        fs.Position = position;
                     }
                 }
             }
@@ -214,6 +241,12 @@ namespace SW_File_Helper.BL.Net.TCPClients
         {
             int typeInt = (int)type;
             byte[] sendBuffer = BitConverter.GetBytes(typeInt);
+            networkStream.Write(sendBuffer, 0, sendBuffer.Length);
+        }
+
+        private void SendMessageSize(byte[] buffer, NetworkStream networkStream)
+        {
+            byte[] sendBuffer = BitConverter.GetBytes(buffer.Length);
             networkStream.Write(sendBuffer, 0, sendBuffer.Length);
         }
 

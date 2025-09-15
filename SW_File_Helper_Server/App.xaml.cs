@@ -12,6 +12,7 @@ using SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors;
 using System.ComponentModel;
+using System.IO;
 
 namespace SW_File_Helper_Server
 {
@@ -44,16 +45,22 @@ namespace SW_File_Helper_Server
             services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<IMessageStreamProcessor, MessageStreamProcessor>();
             services.AddSingleton<ICommandStreamProcessor, CommandStreamProcessor>();
-            services.AddSingleton<IFileStreamProcessor, FileStreamProcessor>();
+            services.AddSingleton<IFileStreamProcessor>(c => 
+            {
+                var logger = c.GetRequiredService<IConsoleLogger>();
+                IFileStreamProcessor fileStreamProcessor = new FileStreamProcessor(logger, Environment.CurrentDirectory + 
+                    Path.DirectorySeparatorChar + "Temp");
+                return fileStreamProcessor;
+            });
             services.AddSingleton<INetworkStreamProcessorWrapper>(c => 
             {
                 var logger = c.GetRequiredService<IConsoleLogger>();
 
                 INetworkStreamProcessor msgProcessor = c.GetRequiredService<IMessageStreamProcessor>();
                 INetworkStreamProcessor commandProcessor = c.GetRequiredService<ICommandStreamProcessor>();
-                commandProcessor.Next = msgProcessor;
-                INetworkStreamProcessor fileProcessor = c.GetRequiredService<IFileStreamProcessor>();
-                fileProcessor.Next = commandProcessor;
+                msgProcessor.Next = commandProcessor;
+                IFileStreamProcessor fileProcessor = c.GetRequiredService<IFileStreamProcessor>();
+                commandProcessor.Next = fileProcessor;
 
                 INetworkStreamProcessorWrapper networkStreamProcessorWrapper = 
                 new NetworkStreamProcessorWrapper(logger, msgProcessor);
@@ -101,8 +108,6 @@ namespace SW_File_Helper_Server
 
         protected override void OnExit(ExitEventArgs e)
         {
-            
-
             base.OnExit(e);
         }
     }

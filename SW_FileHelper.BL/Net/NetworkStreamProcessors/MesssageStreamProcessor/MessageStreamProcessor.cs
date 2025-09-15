@@ -10,6 +10,11 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor
     {
         public OnProcessed<string>? OnProcess { get; set; }
 
+        public MessageStreamProcessor()
+        {
+            MessageType = MessageType.Message;
+        }
+
         public override void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {
             base.Process(type, networkStream, clientIp);

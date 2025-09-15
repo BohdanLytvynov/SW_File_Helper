@@ -1,10 +1,5 @@
 ﻿using SW_File_Helper.DAL.Models.TCPModels.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
 {
@@ -12,6 +7,13 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
     {
         public INetworkStreamProcessor Next { get; set; }
         public MessageType MessageType { get; init; }
+        public int RecieveBufferSize { get; set; }
+
+        protected NetworkStreamProcessorBase()
+        {
+            MessageType = MessageType.None;
+            RecieveBufferSize = 1024;
+        }
 
         public virtual void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {

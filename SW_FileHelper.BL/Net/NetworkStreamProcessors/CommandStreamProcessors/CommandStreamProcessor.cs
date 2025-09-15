@@ -16,6 +16,11 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors
     {
         public OnProcessed<JObject>? OnProcess { get; set; }
 
+        public CommandStreamProcessor()
+        {
+            MessageType = MessageType.Command;
+        }
+
         public override void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {
             base.Process(type, networkStream, clientIp);

@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SW_File_Helper.BL.FileProcessors;
 using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
-using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Settings;
@@ -20,7 +18,6 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using static SW_File_Helper.Controls.EditableListView;
 
@@ -53,7 +50,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private IListViewFileViewModelToFileModelConverter? m_fileViewModelToFileModelConverter;
 
-        private IRemoteFileProcessor? m_fileProcessor;
+        private IRemoteFileProcessor? m_remoteFileProcessor;
 
         private OnShowFavoritesFired m_OnShowFavoritesFired;
 
@@ -136,8 +133,8 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
-
-            m_tcpClient = new TCPClient(m_consoleLogger, "TCP Client");
+            m_tcpClient = serviceWrapper.GetRequiredService<ITCPClient>();
+            m_remoteFileProcessor = serviceWrapper.GetRequiredService<IRemoteFileProcessor>();
         }
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
@@ -158,6 +155,7 @@ namespace SW_File_Helper.ViewModels.Views
         {
             m_tcpClient.Dispose();
         }
+
         public MainWindowViewModel()
         {
             #region Field Initialization
@@ -213,6 +211,7 @@ namespace SW_File_Helper.ViewModels.Views
         private void CheckTCPConnections()
         {
             m_tcpClient.SendMessage("TCP connection Test");
+            m_tcpClient.SendMessage("TCP Test 2");
         }
 
         private void ConfigureTCPClients()
@@ -285,7 +284,7 @@ namespace SW_File_Helper.ViewModels.Views
                 fileModels.Add(m_fileViewModelToFileModelConverter.Convert(file));
             }
 
-            m_fileProcessor.Process(fileModels, ext);
+            m_remoteFileProcessor.Process(fileModels, ext);
         }
 
         #endregion
