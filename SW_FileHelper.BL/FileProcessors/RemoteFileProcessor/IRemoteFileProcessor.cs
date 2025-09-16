@@ -1,10 +1,11 @@
-﻿using SW_File_Helper.BL.Net.TCPClients;
+﻿using SW_File_Helper.BL.Factories.TCPClientFactories;
+using SW_File_Helper.BL.Net.TCPClients;
 
 namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 {
     public interface IRemoteFileProcessor : IFileProcessor
     {
-        public ITCPClient TCPClient { get; set; }
+        public ITCPClientFactory TCPClientFactory { get; set; }
 
         void AbortOperation();
     }

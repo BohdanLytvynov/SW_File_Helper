@@ -1,10 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using SW_File_Helper.BL.Factories.TCPClientFactories;
 using SW_File_Helper.BL.Loggers.Base;
-using SW_File_Helper.BL.Net.TCPClients;
-using SW_File_Helper.DAL.DataProviders.Settings;
-using SW_File_Helper.DAL.Helpers;
 using SW_File_Helper.DAL.Models;
-using SW_File_Helper.DAL.Models.TCPModels;
 
 namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 {
@@ -12,15 +8,15 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
     {
         public RemoteFileProcessor(
             ILogger logger, 
-            ITCPClient tCPClient) : base(logger)
+            ITCPClientFactory tCPClient) : base(logger)
         {
-            TCPClient = tCPClient ?? throw new ArgumentNullException(nameof(tCPClient));
+            TCPClientFactory = tCPClient ?? throw new ArgumentNullException(nameof(tCPClient));
             m_cancelToken = new CancellationTokenSource();
         }
 
         private CancellationTokenSource m_cancelToken;
 
-        public ITCPClient TCPClient { get; set; }
+        public ITCPClientFactory TCPClientFactory { get; set; }
 
         public override void Process(List<FileModel> fileModels, string newExtension)
         {
@@ -30,23 +26,23 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
                 {
                     foreach (FileModel fileModel in fileModels)
                     {
-                        if (m_cancelToken.IsCancellationRequested)
-                            break;
+                        //if (m_cancelToken.IsCancellationRequested)
+                        //    break;
 
-                        var srcPath = fileModel.PathToFile;
+                        //var srcPath = fileModel.PathToFile;
 
-                        var filename = Path.GetFileName(srcPath);
+                        //var filename = Path.GetFileName(srcPath);
 
-                        TCPClient.SendFile(srcPath);
+                        //TCPClientFactory.SendFile(srcPath);
 
-                        ProcessFilesCommand processFilesCommand = new ProcessFilesCommand();
-                        processFilesCommand.Src = srcPath;
-                        processFilesCommand.NewFileExtension = newExtension;
-                        foreach (var dest in fileModel.PathToDst)
-                        {
-                            processFilesCommand.Dest.Add(dest);
-                        }
-                        TCPClient.SendCommand(processFilesCommand);
+                        //ProcessFilesCommand processFilesCommand = new ProcessFilesCommand();
+                        //processFilesCommand.Src = srcPath;
+                        //processFilesCommand.NewFileExtension = newExtension;
+                        //foreach (var dest in fileModel.PathToDst)
+                        //{
+                        //    processFilesCommand.Dest.Add(dest);
+                        //}
+                        //TCPClientFactory.SendCommand(processFilesCommand);
                     }
 
                     //TCPClient.SendMessage();

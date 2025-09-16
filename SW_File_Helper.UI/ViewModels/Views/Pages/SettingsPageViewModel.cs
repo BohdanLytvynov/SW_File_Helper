@@ -1,4 +1,5 @@
-﻿using SW_File_Helper.BL.Helpers;
+﻿using SW_File_Helper.BL.Factories.TCPClientFactories;
+using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
 using SW_File_Helper.DAL.Repositories.Favorites;
@@ -12,9 +13,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
     public class SettingsPageViewModel : ValidatableViewModel
     {
         #region Events
-        public event Action OnStartClients;
-
-        public event Action OnStopClients;
+        public event Action OnCheckClientPressed;
         #endregion
 
         #region Fields
@@ -37,10 +36,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         private ISettingsDataProvider m_dataProvider;
 
         private IFavoritesRepository m_favoritesRepository;
-
-        private string m_StartClientButtonContent;
-
-        private bool m_ClientsStarted;
+        
         #endregion
 
         #region Properties
@@ -86,10 +82,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 ShowPopup = false;
             }
         }
-        public string StartClientButtonContent
-        { get => m_StartClientButtonContent; set => Set(ref m_StartClientButtonContent, value); }
-        public bool ClientsStarted
-        { get => m_ClientsStarted; set => Set(ref m_ClientsStarted, value); }
 
         #endregion
 
@@ -140,7 +132,7 @@ namespace SW_File_Helper.ViewModels.Views.Pages
         #region Commands
         public ICommand OnAddToFavoritesIPButtonPressed { get; }
 
-        public ICommand OnStartClientButtonPressed { get; }
+        public ICommand OnCheckClientButtonPressed { get; }
         #endregion
 
         #region Ctor
@@ -170,10 +162,6 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
             m_SelectedIPAddress = string.Empty;
 
-            m_StartClientButtonContent = "Start Client";
-
-            m_ClientsStarted = false;
-
             InitValidArray(3);
 
             #endregion
@@ -185,9 +173,9 @@ namespace SW_File_Helper.ViewModels.Views.Pages
                 CanOnAddIPAddressToFavoritesButtonPressedExecute
                 );
 
-            OnStartClientButtonPressed = new Command(
-                OnStartServerButtonPressedExecute,
-                CanOnStartServerButtonPressedExecute
+            OnCheckClientButtonPressed = new Command(
+                OnCheckClientButtonPressedExecute,
+                CanOnCheckClientButtonPressedExecute
                 );
 
             #endregion
@@ -198,23 +186,12 @@ namespace SW_File_Helper.ViewModels.Views.Pages
 
         #region On Start Client Button Pressed
 
-        private bool CanOnStartServerButtonPressedExecute(object p) => 
+        private bool CanOnCheckClientButtonPressedExecute(object p) => 
             ValidateFields(1, GetLastIndexOfValidArray()) && RemoteModeEnabled;
 
-        private void OnStartServerButtonPressedExecute(object p)
+        private void OnCheckClientButtonPressedExecute(object p)
         {
-            ClientsStarted = !ClientsStarted;
-
-            if (ClientsStarted)
-            {
-                OnStartClients?.Invoke();
-                StartClientButtonContent = "Stop Client";
-            }
-            else
-            {
-                OnStopClients?.Invoke();
-                StartClientButtonContent = "Start Client";
-            }
+            OnCheckClientPressed?.Invoke();
         }
 
         #endregion

@@ -141,10 +141,9 @@
                                     <ColumnDefinition Width="140"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <Button Content="{Binding StartClientButtonContent, 
-                                    UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                                <Button Content="Check Client" 
                                         Style="{StaticResource Button}" Grid.Column="1"
-                                        Command="{Binding OnStartClientButtonPressed}"/>
+                                        Command="{Binding OnCheckClientButtonPressed}"/>
                             </Grid>
                         </StackPanel>
                     </StackPanel>

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SW_File_Helper.BL.Factories.TCPClientFactories;
 using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
+using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Settings;
@@ -68,7 +70,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private ResourceDictionary m_commonResourceDictionary;
 
-        private ITCPClient m_tcpClient;
+        private ITCPClientFactory m_tcpClientFactory;
         #endregion
 
         #region Properties
@@ -133,7 +135,7 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
-            m_tcpClient = serviceWrapper.GetRequiredService<ITCPClient>();
+            m_tcpClientFactory = serviceWrapper.GetRequiredService<ITCPClientFactory>();
             m_remoteFileProcessor = serviceWrapper.GetRequiredService<IRemoteFileProcessor>();
         }
 
@@ -142,18 +144,29 @@ namespace SW_File_Helper.ViewModels.Views
             LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
-        public void OnStartClientButtonPressed()
+        public void OnCheckClientButtonPressed()
         {
-            ConfigureTCPClients();
+            using (var tcpClient = m_tcpClientFactory.Create())
+            {
+                var settings = m_settingsDataProvider.GetData();
 
-            InitTCPCLients();
+                tcpClient.Endpoint = IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort);
 
-            CheckTCPConnections();
-        }
+                tcpClient.Init();
 
-        public void OnStopClientButtonPressed()
-        {
-            m_tcpClient.Dispose();
+                tcpClient.SendMessage("Test Connection1");
+            }
+
+            using (var tcpClient = m_tcpClientFactory.Create())
+            {
+                var settings = m_settingsDataProvider.GetData();
+
+                tcpClient.Endpoint = IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort);
+
+                tcpClient.Init();
+
+                tcpClient.SendMessage("Test Connection2");
+            }
         }
 
         public MainWindowViewModel()
@@ -207,25 +220,6 @@ namespace SW_File_Helper.ViewModels.Views
         #endregion
 
         #region Methods
-
-        private void CheckTCPConnections()
-        {
-            m_tcpClient.SendMessage("TCP connection Test");
-        }
-
-        private void ConfigureTCPClients()
-        {
-            var settings = m_settingsDataProvider.GetData();
-            var hostIP = settings.HostIPAddress;
-            var msgListenerPort = settings.TCPListenerPort;
-
-            m_tcpClient.Endpoint = new IPEndPoint(IPAddress.Parse(hostIP), msgListenerPort);
-        }
-
-        private void InitTCPCLients()
-        { 
-            m_tcpClient.Init();
-        }
 
         private void FavoritesWindow_OnFavoritesSelected(List<Guid> ids)
         {

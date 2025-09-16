@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SW_File_Helper.BL.Factories.CreationOptions;
+using SW_File_Helper.BL.Factories.TCPClientFactories;
 using SW_File_Helper.BL.FileProcessors;
 using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
 using SW_File_Helper.BL.Net.TCPClients;
@@ -52,18 +54,19 @@ namespace SW_File_Helper
             services.AddSingleton<IConsoleLogger, ConsoleLogger>();
             services.AddSingleton<ISettingsDataProvider, SettingsDataProvider>();
             services.AddSingleton<SettingsPageViewModel>();
-            services.AddSingleton<ITCPClient>(c => 
+            services.AddSingleton<ITCPClientFactory>(c => 
             {
                 var logger = c.GetRequiredService<IConsoleLogger>();
-                ITCPClient tCPClient = new TCPClient(logger, "TCP Client");
-                return tCPClient;
+                TCPClientCreationOptions tCPClientCreationOptions = new TCPClientCreationOptions("TCP Client");
+                ITCPClientFactory tCPClientFactory = new TCPClientFactory(logger, tCPClientCreationOptions);
+                return tCPClientFactory;
             });
             services.AddSingleton<IRemoteFileProcessor>(c => 
             {
                 var logger = c.GetRequiredService<IConsoleLogger>();
-                var client = c.GetRequiredService<ITCPClient>();
+                var tcpClientFactory = c.GetRequiredService<ITCPClientFactory>();
 
-                IRemoteFileProcessor remoteFileProcessor = new RemoteFileProcessor(logger, client);
+                IRemoteFileProcessor remoteFileProcessor = new RemoteFileProcessor(logger, tcpClientFactory);
                 return remoteFileProcessor;
             });
             services.AddScoped<FavoritesWindowViewModel>();
@@ -83,8 +86,7 @@ namespace SW_File_Helper
                 var settingsPageVM = c.GetRequiredService<SettingsPageViewModel>();
 
                 var vm = c.GetRequiredService<MainWindowViewModel>();
-                settingsPageVM.OnStartClients += vm.OnStartClientButtonPressed;
-                settingsPageVM.OnStopClients += vm.OnStopClientButtonPressed;
+                settingsPageVM.OnCheckClientPressed += vm.OnCheckClientButtonPressed;
 
                 var mainWindow = new MainWindow();
                 Application.Current.MainWindow = mainWindow;
@@ -92,7 +94,6 @@ namespace SW_File_Helper
                 vm.WindowClosed += (sender, args) =>
                 {
                     mainWindow.Close();
-                    vm.OnStopClientButtonPressed();
                 };
 
                 mainWindow.DataContext = vm;
