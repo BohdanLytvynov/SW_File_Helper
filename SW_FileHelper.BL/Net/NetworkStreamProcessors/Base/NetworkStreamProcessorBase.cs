@@ -17,8 +17,9 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
 
         public virtual void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {
-            if(Next!= null && MessageType != type)
-                Next.Process(type, networkStream, clientIp);
+            if(MessageType != type)
+                Next?.Process(type, networkStream, clientIp);
+            return;
         }
 
         protected virtual int GetDataSize(NetworkStream networkStream, int size = 4)

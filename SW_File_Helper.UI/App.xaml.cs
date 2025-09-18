@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SW_File_Helper.BL.Builders;
+using SW_File_Helper.BL.Directors;
 using SW_File_Helper.BL.Factories.CreationOptions;
 using SW_File_Helper.BL.Factories.TCPClientFactories;
 using SW_File_Helper.BL.FileProcessors;
@@ -61,12 +63,16 @@ namespace SW_File_Helper
                 ITCPClientFactory tCPClientFactory = new TCPClientFactory(logger, tCPClientCreationOptions);
                 return tCPClientFactory;
             });
+            services.AddSingleton<ITCPClientBuilder, TCPClientBuilder>();
+            services.AddSingleton<ITCPClientDirector, TCPClientDirector>();
             services.AddSingleton<IRemoteFileProcessor>(c => 
             {
                 var logger = c.GetRequiredService<IConsoleLogger>();
-                var tcpClientFactory = c.GetRequiredService<ITCPClientFactory>();
+                var tcpClientDirector = c.GetRequiredService<ITCPClientDirector>();
+                var settingsDataProvider = c.GetRequiredService<ISettingsDataProvider>();
 
-                IRemoteFileProcessor remoteFileProcessor = new RemoteFileProcessor(logger, tcpClientFactory);
+                IRemoteFileProcessor remoteFileProcessor = new RemoteFileProcessor(logger,
+                    tcpClientDirector, settingsDataProvider);
                 return remoteFileProcessor;
             });
             services.AddScoped<FavoritesWindowViewModel>();

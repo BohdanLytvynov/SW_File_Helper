@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SW_File_Helper.BL.Factories.TCPClientFactories;
+using SW_File_Helper.BL.Directors;
 using SW_File_Helper.BL.FileProcessors.RemoteFileProcessor;
 using SW_File_Helper.BL.Helpers;
-using SW_File_Helper.BL.Net.TCPClients;
 using SW_File_Helper.Converters;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
@@ -17,7 +16,6 @@ using SW_File_Helper.ViewModels.Models.Logs.Base;
 using SW_File_Helper.Views;
 using SW_File_Helper.Views.Pages;
 using System.Collections.ObjectModel;
-using System.Net;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
@@ -70,7 +68,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private ResourceDictionary m_commonResourceDictionary;
 
-        private ITCPClientFactory m_tcpClientFactory;
+        private ITCPClientDirector m_TcpClientDirector;
         #endregion
 
         #region Properties
@@ -135,37 +133,27 @@ namespace SW_File_Helper.ViewModels.Views
 
             m_consoleLogger = consoleLogger;
             m_consoleLogger.OnLogProcessed += M_consoleLogger_OnLogProcessed;
-            m_tcpClientFactory = serviceWrapper.GetRequiredService<ITCPClientFactory>();
+            m_TcpClientDirector = serviceWrapper.GetRequiredService<ITCPClientDirector>();
             m_remoteFileProcessor = serviceWrapper.GetRequiredService<IRemoteFileProcessor>();
         }
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
         {
-            LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
+            this.QueueJobToDispatcher(() =>
+            {
+                LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
+            });
         }
 
         public void OnCheckClientButtonPressed()
         {
-            using (var tcpClient = m_tcpClientFactory.Create())
+            var settings = m_settingsDataProvider.GetData();
+
+            using (var tcpClient = m_TcpClientDirector.GetTCPClient(
+                    IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort))
+                )
             {
-                var settings = m_settingsDataProvider.GetData();
-
-                tcpClient.Endpoint = IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort);
-
-                tcpClient.Init();
-
-                tcpClient.SendMessage("Test Connection1");
-            }
-
-            using (var tcpClient = m_tcpClientFactory.Create())
-            {
-                var settings = m_settingsDataProvider.GetData();
-
-                tcpClient.Endpoint = IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort);
-
-                tcpClient.Init();
-
-                tcpClient.SendMessage("Test Connection2");
+                tcpClient.SendMessage("Testing Connection");
             }
         }
 

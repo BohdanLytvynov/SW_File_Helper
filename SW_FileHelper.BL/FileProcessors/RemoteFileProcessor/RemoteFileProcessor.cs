@@ -1,6 +1,11 @@
-﻿using SW_File_Helper.BL.Factories.TCPClientFactories;
+﻿using SW_File_Helper.BL.Directors;
+using SW_File_Helper.BL.Factories.TCPClientFactories;
+using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Loggers.Base;
+using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
+using SW_File_Helper.DAL.Models.TCPModels;
+using System.Net;
 
 namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 {
@@ -8,15 +13,18 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
     {
         public RemoteFileProcessor(
             ILogger logger, 
-            ITCPClientFactory tCPClient) : base(logger)
+            ITCPClientDirector tcpClientDirector,
+            ISettingsDataProvider settingsDataProvider) : base(logger)
         {
-            TCPClientFactory = tCPClient ?? throw new ArgumentNullException(nameof(tCPClient));
+            TCPClientDirector = tcpClientDirector ?? throw new ArgumentNullException(nameof(tcpClientDirector));
             m_cancelToken = new CancellationTokenSource();
+            SettingsDataProvider = settingsDataProvider ?? throw new ArgumentNullException(nameof(settingsDataProvider));
         }
 
         private CancellationTokenSource m_cancelToken;
 
-        public ITCPClientFactory TCPClientFactory { get; set; }
+        public ITCPClientDirector TCPClientDirector { get; set; }
+        public ISettingsDataProvider SettingsDataProvider { get; set; }
 
         public override void Process(List<FileModel> fileModels, string newExtension)
         {
@@ -24,28 +32,33 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
             {
                 try
                 {
+                    SettingsDataProvider.LoadData();
+                    var settings = SettingsDataProvider.GetData();
+
                     foreach (FileModel fileModel in fileModels)
                     {
-                        //if (m_cancelToken.IsCancellationRequested)
-                        //    break;
+                        if (m_cancelToken.IsCancellationRequested)
+                            break;
 
-                        //var srcPath = fileModel.PathToFile;
+                        ProcessFilesCommand processFilesCommand = new ProcessFilesCommand();
 
-                        //var filename = Path.GetFileName(srcPath);
+                        using (var tcpClient = TCPClientDirector.GetTCPClient(
+                            IPHelper.CreateEndPoint(settings.HostIPAddress, settings.TCPListenerPort)))
+                        {
+                            var srcPath = fileModel.PathToFile;
 
-                        //TCPClientFactory.SendFile(srcPath);
+                            tcpClient.SendFile(srcPath);
+                            
+                            processFilesCommand.Src = srcPath;
+                            processFilesCommand.NewFileExtension = newExtension;
+                            foreach (var dest in fileModel.PathToDst)
+                            {
+                                processFilesCommand.Dest.Add(dest);
+                            }
 
-                        //ProcessFilesCommand processFilesCommand = new ProcessFilesCommand();
-                        //processFilesCommand.Src = srcPath;
-                        //processFilesCommand.NewFileExtension = newExtension;
-                        //foreach (var dest in fileModel.PathToDst)
-                        //{
-                        //    processFilesCommand.Dest.Add(dest);
-                        //}
-                        //TCPClientFactory.SendCommand(processFilesCommand);
+                            tcpClient.SendCommand(processFilesCommand);
+                        }
                     }
-
-                    //TCPClient.SendMessage();
                 }
                 catch (Exception ex)
                 {
@@ -53,6 +66,7 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
                 }
             });
 
+            t.ContinueWith(t => t.Dispose());
             t.Start();
         }
 

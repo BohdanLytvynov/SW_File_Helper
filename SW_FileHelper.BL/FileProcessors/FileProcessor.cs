@@ -1,5 +1,4 @@
 ﻿using SW_File_Helper.BL.Loggers.Base;
-using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Helpers;
 using SW_File_Helper.DAL.Models;
 

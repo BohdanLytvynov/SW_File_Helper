@@ -47,7 +47,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
                 if (packets > 0)
                 {
                     byte[] recieveBuffer = null;
-
+                    IOHelper.CreateDirectoryIfNotExists(PathToTemp);
                     using (var fs = File.Create(PathToTemp + Path.DirectorySeparatorChar + fileMetadata.FileName))
                     {
                         for (int i = 0; i < packets; i++)

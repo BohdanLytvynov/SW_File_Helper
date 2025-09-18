@@ -2,6 +2,7 @@
 using SW_File_Helper.BL.Factories.CreationOptions;
 using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.TCPClients;
+using System.Net;
 
 namespace SW_File_Helper.BL.Factories.TCPClientFactories
 {

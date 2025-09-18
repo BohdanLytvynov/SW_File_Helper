@@ -195,7 +195,7 @@ namespace SW_File_Helper.BL.Net.TCPClients
                 {
                     var networkStream = instance.GetStream();
 
-                    if (instance == null)
+                    if (networkStream == null)
                     {
                         Logger.Error("Failed to get NetworkStream!");
                         return;
