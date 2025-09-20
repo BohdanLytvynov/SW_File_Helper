@@ -139,10 +139,7 @@ namespace SW_File_Helper.ViewModels.Views
 
         private void M_consoleLogger_OnLogProcessed(object arg1, string arg2, BL.Loggers.Enums.LogType arg3)
         {
-            this.QueueJobToDispatcher(() =>
-            {
-                LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
-            });
+            LogMessage = (arg1 as LogViewModel) ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");
         }
 
         public void OnCheckClientButtonPressed()

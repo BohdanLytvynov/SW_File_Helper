@@ -1,15 +1,10 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using SW_File_Helper.BL.Extensions.NetworkStreams;
 using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
 using SW_File_Helper.DAL.Helpers;
 using SW_File_Helper.DAL.Models.TCPModels.Enums;
 using SW_File_Helper.DAL.Models.TCPModels.FileMetadata;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
 {
@@ -31,40 +26,42 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
             FileMetadata fileMetadata = null;
             try
             {
-                int sizeOfMetadata = GetDataSize(networkStream);
-                byte[] buffer = new byte[sizeOfMetadata];
-                ReadBytes(networkStream, sizeOfMetadata, buffer);
-                string jsonString = Encoding.UTF8.GetString(buffer);
-                fileMetadata = JsonHelper.DeSerialize(jsonString, new FileMetadata());
+                int sizeOfMetadata = networkStream.ReadMessageSize();
+                fileMetadata = networkStream.GetObject(sizeOfMetadata, new FileMetadata());
 
                 Logger?.Info($"Recieving file: {fileMetadata.FileName} using {fileMetadata.PacketCount} Packets");
 
                 var packets = fileMetadata.PacketCount;
                 int currentPacketCount = 0;
                 int totalRecievedCount = 0;
-                int position = 0;
+                int BytesRead = 0;
 
                 if (packets > 0)
                 {
                     byte[] recieveBuffer = null;
+                    int packetSize = 0;
                     IOHelper.CreateDirectoryIfNotExists(PathToTemp);
                     using (var fs = File.Create(PathToTemp + Path.DirectorySeparatorChar + fileMetadata.FileName))
                     {
-                        for (int i = 0; i < packets; i++)
+                        do
                         {
                             currentPacketCount++;
-                            totalRecievedCount += RecieveBufferSize;
-                            recieveBuffer = new byte[RecieveBufferSize];
-                            networkStream.Read(recieveBuffer, 0, recieveBuffer.Length);
-                            fs.Position = position;
+                            packetSize = networkStream.ReadMessageSize();
+                            recieveBuffer = new byte[packetSize];
+                            BytesRead = networkStream.Read(recieveBuffer, 0, recieveBuffer.Length);
+
+                            if (BytesRead == 0)
+                                break;
+
+                            totalRecievedCount += BytesRead;
                             fs.Write(recieveBuffer, 0, recieveBuffer.Length);
-                            position += RecieveBufferSize;
-                        }
+
+                        } while (true);
                     }
 
-                    if (fileMetadata.PacketCount == currentPacketCount)
+                    if (fileMetadata.PacketCount == currentPacketCount && totalRecievedCount == fileMetadata.FileSize)
                     {
-                        Logger.Ok($"File {fileMetadata.FileName} recieved successfuly. RecievedSize equals Estimated: {fileMetadata.FileSize == totalRecievedCount}");
+                        Logger.Ok($"File {fileMetadata.FileName} recieved successfuly. Recieved File Size equals Estimated: {fileMetadata.FileSize == totalRecievedCount}");
                     }
                     else
                         Logger.Warn($"File {fileMetadata.FileName} recieved but Current Packet Count was: {currentPacketCount} and Estimated: {fileMetadata.PacketCount}");

@@ -7,7 +7,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
 {
     public interface ITCPListener : ITCPBase<TcpListener>
     {
-        public INetworkStreamProcessorWrapper NetworkStreamProcessor { get; set; }
+        public INetworkStreamProcessorWrapper NetworkStreamProcessorWrapper { get; set; }
 
         void Start();
 

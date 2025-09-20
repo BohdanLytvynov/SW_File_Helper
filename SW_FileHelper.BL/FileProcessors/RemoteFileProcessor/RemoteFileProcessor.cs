@@ -1,11 +1,9 @@
 ﻿using SW_File_Helper.BL.Directors;
-using SW_File_Helper.BL.Factories.TCPClientFactories;
 using SW_File_Helper.BL.Helpers;
 using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.DAL.DataProviders.Settings;
 using SW_File_Helper.DAL.Models;
 using SW_File_Helper.DAL.Models.TCPModels;
-using System.Net;
 
 namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
 {
@@ -48,7 +46,7 @@ namespace SW_File_Helper.BL.FileProcessors.RemoteFileProcessor
                             var srcPath = fileModel.PathToFile;
 
                             tcpClient.SendFile(srcPath);
-                            
+
                             processFilesCommand.Src = srcPath;
                             processFilesCommand.NewFileExtension = newExtension;
                             foreach (var dest in fileModel.PathToDst)

@@ -1,14 +1,10 @@
 ﻿using Newtonsoft.Json.Linq;
+using SW_File_Helper.BL.Extensions.NetworkStreams;
 using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
-using SW_File_Helper.DAL.Models.TCPModels;
 using SW_File_Helper.DAL.Models.TCPModels.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors
 {
@@ -25,10 +21,10 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors
         {
             base.Process(type, networkStream, clientIp);
 
-            int messageSize = GetDataSize(networkStream);
+            int messageSize = networkStream.ReadMessageSize();
             byte[] buffer = new byte[messageSize];
 
-            ReadBytes(networkStream, messageSize, buffer);
+            networkStream.ReadBytes(messageSize, buffer);
 
             OnProcess?.Invoke(JObject.Parse(Encoding.UTF8.GetString(buffer)), clientIp);
         }

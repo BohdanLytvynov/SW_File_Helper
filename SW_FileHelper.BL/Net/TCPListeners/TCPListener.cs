@@ -14,13 +14,13 @@ namespace SW_File_Helper.BL.Net.TCPListeners
         private CancellationTokenSource m_cancellationTokenSource;
         
         public IPEndPoint Endpoint { get; set; }
-        public INetworkStreamProcessorWrapper NetworkStreamProcessor { get; set; }
+        public INetworkStreamProcessorWrapper NetworkStreamProcessorWrapper { get; set; }
 
-        public TCPListener(ILogger logger, INetworkStreamProcessorWrapper networkStreamProcessor, 
+        public TCPListener(ILogger logger, INetworkStreamProcessorWrapper networkStreamProcessorWrapper, 
             string clientName)
             : base(logger, clientName)
         {
-            NetworkStreamProcessor = networkStreamProcessor ?? throw new NullReferenceException(nameof(networkStreamProcessor));
+            NetworkStreamProcessorWrapper = networkStreamProcessorWrapper ?? throw new NullReferenceException(nameof(networkStreamProcessorWrapper));
         }
 
         public override void Dispose()
@@ -132,7 +132,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                         continue;
                     }
 
-                    NetworkStreamProcessor.ProcessNetworkStream(netStream, senderIP.ToString());
+                    NetworkStreamProcessorWrapper.ProcessNetworkStream(netStream, senderIP.ToString());
 
                     sender.Close();
                 }

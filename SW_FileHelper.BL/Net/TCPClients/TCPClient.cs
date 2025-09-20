@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using SW_File_Helper.BL.Extensions.NetworkStreams;
 using SW_File_Helper.BL.Loggers.Base;
 using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.DAL.Helpers;
@@ -102,12 +102,12 @@ namespace SW_File_Helper.BL.Net.TCPClients
                     Logger.Error($"Error on getting NetworkStream!");
                     return;
                 }
-                SendMessageType(MessageType.Command, networkStream);
+                networkStream.SendMessageType(MessageType.Command);
 
                 string commandStr = JsonHelper.SerializeWithNonFormatting(command);
                 sendBuffer = Encoding.UTF8.GetBytes(commandStr);
                 
-                SendMessageSize(sendBuffer, networkStream);
+                networkStream.SendMessageSize(sendBuffer);
 
                 networkStream.Write(sendBuffer, 0, sendBuffer.Length);
                 Logger.Ok($"{command.CommandType} was sent successfuly.");
@@ -138,10 +138,10 @@ namespace SW_File_Helper.BL.Net.TCPClients
                     Logger.Error($"Error on getting NetworkStream!");
                     return;
                 }
-                SendMessageType(MessageType.Message, networkStream);
+                networkStream.SendMessageType(MessageType.Message);
 
                 sendBuffer = Encoding.UTF8.GetBytes(msg);
-                SendMessageSize(sendBuffer, networkStream);
+                networkStream.SendMessageSize(sendBuffer);
 
                 networkStream.Write(sendBuffer, 0, sendBuffer.Length);
                 Logger.Ok($"Message: {msg} was sent successfuly.");
@@ -201,28 +201,32 @@ namespace SW_File_Helper.BL.Net.TCPClients
                         return;
                     }
 
-                    SendMessageType(MessageType.File, networkStream);
+                    networkStream.SendMessageType(MessageType.File);
                     
                     long fileSize = fs.Length;
                     string fileName = Path.GetFileName(path);
                     int NoOfPackets = CalculateAmountOfPackets(fileSize, SendingBufferSize);
+                    int totalSendBufferSize = NoOfPackets * SendingBufferSize;
+                    long lastPacketSize = totalSendBufferSize - fileSize;
                     Logger.Info($"Sending {fileName} to the client.");
                     Logger.Info($"Calculated amount of packets: {NoOfPackets}");
-                    FileMetadata fileMetadata = new FileMetadata(fileSize, fileName, NoOfPackets);
-                    string jsonFileMetadata = JsonHelper.Serialize(fileMetadata);
-                    sendingBuffer = Encoding.UTF8.GetBytes(jsonFileMetadata);
 
-                    SendMessageSize(sendingBuffer, networkStream);
-                    networkStream.Write(sendingBuffer, 0, sendingBuffer.Length);
-                    int position = 0;
+                    FileMetadata fileMetadata = new FileMetadata(fileSize, fileName, NoOfPackets);                    
+                    networkStream.SendObject(fileMetadata);
+                    long currentPacketSize = 0;
                     //Send file 
-                    for (int i = 0; i < NoOfPackets; i++)
+                    for (int i = 1; i <= NoOfPackets; i++)
                     {
-                        sendingBuffer = new byte[SendingBufferSize];
+                        if (i == NoOfPackets)//We are about to send the Last Package
+                            currentPacketSize = lastPacketSize;
+                        else
+                            currentPacketSize = SendingBufferSize;
+
+                        sendingBuffer = new byte[currentPacketSize];
+                        networkStream.SendMessageSize(sendingBuffer);
                         fs.Read(sendingBuffer, 0, sendingBuffer.Length);
+                        var position = fs.Position;//For debug
                         networkStream.Write(sendingBuffer, 0, sendingBuffer.Length);
-                        position += SendingBufferSize;
-                        fs.Position = position;
                     }
                 }
             }
@@ -232,24 +236,8 @@ namespace SW_File_Helper.BL.Net.TCPClients
             }
         }
 
-        private int CalculateAmountOfPackets(long fileLength, int bufferSize)
-        {
-            return Convert.ToInt32(Math.Ceiling(Convert.ToDouble(fileLength) / Convert.ToDouble(bufferSize)));
-        }
-
-        private void SendMessageType(MessageType type, NetworkStream networkStream)
-        {
-            int typeInt = (int)type;
-            byte[] sendBuffer = BitConverter.GetBytes(typeInt);
-            networkStream.Write(sendBuffer, 0, sendBuffer.Length);
-        }
-
-        private void SendMessageSize(byte[] buffer, NetworkStream networkStream)
-        {
-            byte[] sendBuffer = BitConverter.GetBytes(buffer.Length);
-            networkStream.Write(sendBuffer, 0, sendBuffer.Length);
-        }
-
+        private static int CalculateAmountOfPackets(long fileLength, int bufferSize) => 
+            Convert.ToInt32(Math.Ceiling(Convert.ToDouble(fileLength) / Convert.ToDouble(bufferSize)));
         #endregion
     }
 }

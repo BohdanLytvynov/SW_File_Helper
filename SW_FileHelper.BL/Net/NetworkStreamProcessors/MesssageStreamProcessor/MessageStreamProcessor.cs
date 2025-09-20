@@ -1,4 +1,5 @@
-﻿using SW_File_Helper.BL.Net.Base;
+﻿using SW_File_Helper.BL.Extensions.NetworkStreams;
+using SW_File_Helper.BL.Net.Base;
 using SW_File_Helper.BL.Net.NetworkStreamProcessors.Base;
 using SW_File_Helper.DAL.Models.TCPModels.Enums;
 using System.Net.Sockets;
@@ -19,11 +20,11 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor
         {
             base.Process(type, networkStream, clientIp);
 
-            int messageSize = GetDataSize(networkStream);
+            int messageSize = networkStream.ReadMessageSize();
             
             byte[] buffer = new byte[messageSize];
 
-            ReadBytes(networkStream, messageSize, buffer);
+            networkStream.ReadBytes(messageSize, buffer);
 
             string message = Encoding.UTF8.GetString(buffer);
             OnProcess?.Invoke(message, clientIp);
