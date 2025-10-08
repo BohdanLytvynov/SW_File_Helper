@@ -21,13 +21,15 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors
         public override void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {
             base.Process(type, networkStream, clientIp);
+            if (!m_processed)
+            {
+                int messageSize = networkStream.ReadMessageSize();
+                byte[] buffer = new byte[messageSize];
 
-            int messageSize = networkStream.ReadMessageSize();
-            byte[] buffer = new byte[messageSize];
+                networkStream.ReadBytes(messageSize, buffer);
 
-            networkStream.ReadBytes(messageSize, buffer);
-
-            OnProcess?.Invoke(Encoding.UTF8.GetString(buffer), clientIp);
+                OnProcess?.Invoke(Encoding.UTF8.GetString(buffer), clientIp);
+            }
         }
     }
 }

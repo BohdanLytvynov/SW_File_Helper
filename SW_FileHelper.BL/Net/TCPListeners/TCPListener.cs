@@ -133,6 +133,7 @@ namespace SW_File_Helper.BL.Net.TCPListeners
                     }
 
                     NetworkStreamProcessorWrapper.ProcessNetworkStream(netStream, senderIP.ToString());
+                    NetworkStreamProcessorWrapper.Reset();
 
                     sender.Close();
                 }

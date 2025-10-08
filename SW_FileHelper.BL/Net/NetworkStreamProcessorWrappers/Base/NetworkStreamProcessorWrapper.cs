@@ -22,5 +22,16 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessorWrappers.Base
             var type = networkStream.ReadMessageType();
             Processor.Process(type, networkStream, clientIp);
         }
+
+        public void Reset()
+        {
+            var temp = Processor;
+
+            while (temp != null)
+            { 
+                temp.Reset();
+                temp = temp.Next;
+            }
+        }
     }
 }

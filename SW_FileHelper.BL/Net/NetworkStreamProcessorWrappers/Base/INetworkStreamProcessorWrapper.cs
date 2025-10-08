@@ -9,5 +9,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessorWrappers.Base
         public INetworkStreamProcessor Processor { get; set; }
         public ILogger Logger { get; set; }
         void ProcessNetworkStream(NetworkStream networkStream, string clientIp);
+
+        void Reset();
     }
 }

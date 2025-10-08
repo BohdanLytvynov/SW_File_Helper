@@ -12,5 +12,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.Base
         MessageType MessageType { get; init; }
 
         void Process(MessageType type, NetworkStream networkStream, string clientIp);
+
+        void Reset();
     }
 }

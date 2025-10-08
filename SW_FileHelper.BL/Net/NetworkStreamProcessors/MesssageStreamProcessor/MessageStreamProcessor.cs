@@ -21,14 +21,18 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.MesssageStreamProcessor
         {
             base.Process(type, networkStream, clientIp);
 
+            if (m_processed)
+                return;
+
             int messageSize = networkStream.ReadMessageSize();
-            
+
             byte[] buffer = new byte[messageSize];
 
             networkStream.ReadBytes(messageSize, buffer);
 
             string message = Encoding.UTF8.GetString(buffer);
             OnProcess?.Invoke(message, clientIp);
+            m_processed = true;
         }
     }
 }

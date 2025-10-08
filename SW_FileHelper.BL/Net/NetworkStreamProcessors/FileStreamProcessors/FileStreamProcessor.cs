@@ -22,6 +22,10 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
         public override void Process(MessageType type, NetworkStream networkStream, string clientIp)
         {
             base.Process(type, networkStream, clientIp);
+
+            if (m_processed)
+                return;
+
             FileMetadata fileMetadata = null;
             try
             {
@@ -42,7 +46,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
                     IOHelper.CreateDirectoryIfNotExists(PathToTemp);
                     using (var fs = File.Create(PathToTemp + Path.DirectorySeparatorChar + fileMetadata.FileName))
                     {
-                        while(currentPacketCount < fileMetadata.PacketCount)
+                        while (currentPacketCount < fileMetadata.PacketCount)
                         {
                             packetSize = networkStream.ReadMessageSize();
                             recieveBuffer = new byte[packetSize];
@@ -50,7 +54,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
                             Logger.Info($"Recieving packet {currentPacketCount} of size: {packetSize} Bytes");
 
                             BytesRead = networkStream.Read(recieveBuffer, 0, recieveBuffer.Length);
-                            
+
                             currentPacketCount++;
                             totalRecievedCount += BytesRead;
                             fs.Write(recieveBuffer, 0, recieveBuffer.Length);
@@ -60,9 +64,7 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
                     }
 
                     if (fileMetadata.PacketCount == currentPacketCount && totalRecievedCount == fileMetadata.FileSize)
-                    {
                         Logger.Ok($"File {fileMetadata.FileName} recieved successfuly. Recieved File Size equals Estimated: {fileMetadata.FileSize == totalRecievedCount}");
-                    }
                     else
                         Logger.Warn($"File {fileMetadata.FileName} recieved but Current Packet Count was: {currentPacketCount} and Estimated: {fileMetadata.PacketCount}");
                 }
@@ -71,7 +73,10 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
             {
                 Logger.Error($"Error during recieving {fileMetadata?.FileName} occured! Error: {ex}");
             }
-
+            finally
+            {
+                m_processed = true;
+            }
         }
     }
 }
