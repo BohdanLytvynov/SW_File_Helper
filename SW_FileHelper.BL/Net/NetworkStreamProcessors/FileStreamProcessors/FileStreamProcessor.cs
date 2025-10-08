@@ -50,16 +50,10 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.FileStreamProcessors
                         {
                             packetSize = networkStream.ReadMessageSize();
                             recieveBuffer = new byte[packetSize];
-
-                            Logger.Info($"Recieving packet {currentPacketCount} of size: {packetSize} Bytes");
-
                             BytesRead = networkStream.Read(recieveBuffer, 0, recieveBuffer.Length);
-
                             currentPacketCount++;
                             totalRecievedCount += BytesRead;
                             fs.Write(recieveBuffer, 0, recieveBuffer.Length);
-
-                            Logger.Ok($"Packet {currentPacketCount} of size: {packetSize} Bytes recieved.");
                         }
                     }
 

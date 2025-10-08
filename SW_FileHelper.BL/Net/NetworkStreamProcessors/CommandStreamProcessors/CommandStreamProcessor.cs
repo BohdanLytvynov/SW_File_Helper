@@ -27,8 +27,8 @@ namespace SW_File_Helper.BL.Net.NetworkStreamProcessors.CommandStreamProcessors
                 byte[] buffer = new byte[messageSize];
 
                 networkStream.ReadBytes(messageSize, buffer);
-
                 OnProcess?.Invoke(Encoding.UTF8.GetString(buffer), clientIp);
+                m_processed = true;
             }
         }
     }
