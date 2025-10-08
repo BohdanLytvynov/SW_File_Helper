@@ -1,0 +1,72 @@
+﻿<Window x:Class="SW_File_Helper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SW_File_Helper"
+        xmlns:vm="clr-namespace:SW_File_Helper.ViewModels.Views"
+        xmlns:controls="clr-namespace:SW_File_Helper.Controls"
+        mc:Ignorable="d"      
+        Height="450"
+        Width="900"
+        Title="{Binding Title, UpdateSourceTrigger=PropertyChanged}"
+        d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=True}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="40"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0,0,0,7">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <controls:EditableListView
+                Title="Please Specify Source and Destination"
+                Margin="5" Grid.Column="0"
+                ListViewItemAssemblyPath="{Binding CurrentAssembly, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ListViewItemTypeName="{Binding ListViewFileViewModel, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                Items="{Binding Files, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ShowFavoritesFired="{Binding ShowFavoritesFired, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                AddToFavoritesFired="{Binding AddToFavoritesFired, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                ManualDraw="{Binding ManualDraw, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                />
+
+            <GridSplitter Grid.Column="1"
+                          Style="{StaticResource GridSplitter_Vertical}"/>
+            <Grid Grid.Column="2" x:Name="Settings">
+                <Frame Grid.Row="0" 
+                       Content="{Binding SettingsPage, UpdateSourceTrigger=PropertyChanged}" 
+                       NavigationUIVisibility="Hidden"/>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1" 
+              x:Name="ButtonsGrid">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="80"/>
+            </Grid.ColumnDefinitions>
+            <Button Content="Process" Grid.Column="1" Style="{StaticResource Button}"
+                    Command="{Binding OnProcessButtonPressed}"
+                    />
+            <Button Content="Quite" Grid.Column="3" Style="{StaticResource Button}"
+                    Command="{Binding OnQuiteButtonPressed}"
+                    />
+        </Grid>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="349*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="498*"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1" Style="{StaticResource GridSplitter_Vertical}"/>
+            <controls:Console MessageToWrite="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+        </Grid>
+    </Grid>
+</Window>
