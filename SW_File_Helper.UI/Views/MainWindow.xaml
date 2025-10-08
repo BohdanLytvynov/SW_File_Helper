@@ -66,7 +66,8 @@
                 <ColumnDefinition Width="498*"/>
             </Grid.ColumnDefinitions>
             <GridSplitter Grid.Column="1" Style="{StaticResource GridSplitter_Vertical}"/>
-            <controls:Console MessageToWrite="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+            <controls:Console 
+                              MessageToWrite="{Binding LogMessage, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
         </Grid>
     </Grid>
 </Window>

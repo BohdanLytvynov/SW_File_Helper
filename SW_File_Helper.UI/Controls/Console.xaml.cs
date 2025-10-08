@@ -14,6 +14,8 @@ namespace SW_File_Helper.Controls
         private Thread m_UpdateConsoleThread;
 
         private Queue<LogViewModel> m_Buffer;
+
+        private CancellationTokenSource m_CancellationTokenSource;
         #endregion
 
         #region Properties DP
@@ -39,6 +41,7 @@ namespace SW_File_Helper.Controls
             m_Buffer = new Queue<LogViewModel>();
             m_UpdateConsoleThread = new Thread(new ThreadStart(UpdateConsole));
             m_UpdateConsoleThread.IsBackground = true;
+            m_CancellationTokenSource = new CancellationTokenSource();
 
             InitializeComponent();
             m_UpdateConsoleThread.Start();
@@ -62,16 +65,28 @@ namespace SW_File_Helper.Controls
 
         private void UpdateConsole()
         {
-            for ( ; ; )
+            try
             {
-                this.ConsoleWindow.Dispatcher.Invoke(() =>
+                for (; ;)
                 {
-                    if (m_Buffer.Count > 0)
-                        this.ConsoleWindow.Items.Add(m_Buffer.Dequeue());
-                });
+                    if (m_CancellationTokenSource.IsCancellationRequested)
+                        m_CancellationTokenSource.Token.ThrowIfCancellationRequested();
 
-                Thread.Sleep(TimeSpan.FromSeconds(5));
+                    this.ConsoleWindow.Dispatcher.Invoke(() =>
+                    {
+                        if (m_Buffer.Count > 0)
+                            this.ConsoleWindow.Items.Add(m_Buffer.Dequeue());
+                    });
+                }
             }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private void UserControl_Unloaded(object sender, RoutedEventArgs e)
+        {
+            m_CancellationTokenSource?.Cancel();
         }
     }
 }

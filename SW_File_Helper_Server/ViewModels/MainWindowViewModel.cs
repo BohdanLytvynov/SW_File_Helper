@@ -114,6 +114,11 @@ namespace SW_File_Helper_Server.ViewModels
             Message = (LogViewModel)arg1 ?? throw new InvalidCastException("Unable to cast log message to LogViewModel!");            
         }
 
+        public MainWindowViewModel()
+        {
+            
+        }
+
         public MainWindowViewModel(ServiceWrapper serviceWrapper)
         {
             #region Init Fields
